@@ -268,7 +268,8 @@
   <h1>Web開発<br>ハンドブック<br>（バックエンド）</h1>
   <nav>
     <ul>
-      <li><a href="#" data-target="nodejs" class="active">🟢 Node.js</a></li>
+      <li><a href="#" data-target="backend-basics" class="active">🌐 バックエンド基本</a></li>
+      <li><a href="#" data-target="nodejs" >🟢 Node.js</a></li>
       <li><a href="#" data-target="npm">📦 npm とは</a></li>
       <li><a href="#" data-target="laravel">🔴 Laravel</a></li>
       <li><a href="#" data-target="composer">🎼 Composer とは</a></li>
@@ -285,8 +286,401 @@
 <!-- ── メインコンテンツ ── -->
 <main id="main">
 
+  <!-- バックエンド基本 -->
+  <section class="section active" id="backend-basics">
+    <div class="section-header">
+      <div class="icon">🌐</div>
+      <h2>バックエンド基本（Express で理解する）</h2>
+    </div>
+
+    <div class="card">
+      <h3>クライアントとサーバーとは</h3>
+      <p><strong>クライアント</strong>はユーザー側（ブラウザ・アプリ）、<strong>サーバー</strong>はリクエストを受けて処理して返す側です。</p>
+      <table>
+        <tr><th>種類</th><th>役割</th><th>例</th></tr>
+        <tr><td>クライアント</td><td>リクエストを送る側</td><td>Chrome・React アプリ・スマホアプリ</td></tr>
+        <tr><td>サーバー</td><td>リクエストを受けて処理して返す側</td><td>Node.js・PHP・Java・Python</td></tr>
+      </table>
+      <pre><code>Client → Request → Server
+Client ← Response ← Server</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>HTTP 通信の流れ</h3>
+      <p>クライアントとサーバーは <strong>HTTP</strong> というルールで通信します。</p>
+      <pre><code>① クライアントがリクエスト送信
+② サーバーが受け取る
+③ サーバーが処理（DB操作など）
+④ レスポンスを返す
+
+例：
+GET /todos
+   ↓
+Node.js
+   ↓
+DB
+   ↓
+JSON 返す</code></pre>
+      <table>
+        <tr><th>HTTP メソッド</th><th>意味</th><th>URL 例</th></tr>
+        <tr><td>GET</td><td>取得</td><td>GET /todos</td></tr>
+        <tr><td>POST</td><td>作成</td><td>POST /todos</td></tr>
+        <tr><td>PUT</td><td>更新（全体）</td><td>PUT /todos/1</td></tr>
+        <tr><td>PATCH</td><td>部分更新</td><td>PATCH /todos/1</td></tr>
+        <tr><td>DELETE</td><td>削除</td><td>DELETE /todos/1</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>HTTP ステータスコード</h3>
+      <p>サーバーの処理結果を表す番号です。レスポンスに含まれます。</p>
+      <table>
+        <tr><th>範囲</th><th>意味</th></tr>
+        <tr><td>200 系</td><td>成功</td></tr>
+        <tr><td>300 系</td><td>リダイレクト</td></tr>
+        <tr><td>400 系</td><td>クライアントエラー（リクエストが悪い）</td></tr>
+        <tr><td>500 系</td><td>サーバーエラー（サーバー側のバグ）</td></tr>
+      </table>
+      <table>
+        <tr><th>コード</th><th>意味</th><th>使う場面</th></tr>
+        <tr><td>200</td><td>OK（成功）</td><td>GET・PUT・PATCH 成功</td></tr>
+        <tr><td>201</td><td>Created（作成成功）</td><td>POST 成功</td></tr>
+        <tr><td>204</td><td>No Content（返すデータなし）</td><td>DELETE 成功</td></tr>
+        <tr><td>400</td><td>Bad Request（不正なリクエスト）</td><td>パラメータ不足・型違い</td></tr>
+        <tr><td>401</td><td>Unauthorized（未認証）</td><td>JWT なし・未ログイン</td></tr>
+        <tr><td>403</td><td>Forbidden（権限なし）</td><td>admin のみ許可など</td></tr>
+        <tr><td>404</td><td>Not Found（存在しない）</td><td>ID が見つからない</td></tr>
+        <tr><td>409</td><td>Conflict（競合・重複）</td><td>同じメールアドレスが既存</td></tr>
+        <tr><td>422</td><td>Unprocessable Entity</td><td>バリデーションエラー</td></tr>
+        <tr><td>500</td><td>Internal Server Error</td><td>DB エラー・バグ</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Node.js の役割（バックエンド）</h3>
+      <p>Node.js は <strong>JavaScript でサーバーを作る環境</strong>です。以下の処理をサーバー側で行います。</p>
+      <table>
+        <tr><th>できること</th><th>内容</th></tr>
+        <tr><td>API 作成</td><td>フロントからのリクエストを受けて JSON を返す</td></tr>
+        <tr><td>DB 操作</td><td>MySQL・PostgreSQL・MongoDB などへの読み書き</td></tr>
+        <tr><td>認証</td><td>JWT・セッション・Cookie の処理</td></tr>
+        <tr><td>ファイル処理</td><td>ファイルの読み書き・アップロード</td></tr>
+        <tr><td>バッチ処理</td><td>定期実行・非同期タスク処理</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Node.js の標準 HTTP サーバー</h3>
+      <p><code>require("http")</code> は Node.js に最初から入っている<strong>標準モジュール（built-in module）</strong>を読み込みます。HTTP サーバーを作る機能がオブジェクトとして入っています。</p>
+      <pre><code>const http = require("http");
+// http オブジェクトの中身（イメージ）
+// { createServer, request, get, Server, IncomingMessage, ServerResponse }
+
+const server = http.createServer((req, res) => {
+  res.end("Hello");
+});
+
+server.listen(3000);
+
+// 流れ：
+// ① http 読み込み（工具箱を取り出す）
+// ② createServer でサーバーオブジェクト生成（建物を建てる）
+// ③ listen(3000) で OS にポート登録・通信待ち受け開始
+// ④ リクエスト来る → callback 実行 → レスポンス返す</code></pre>
+      <div class="tip"><strong>サーバーとは：</strong> 通信を待ち続ける常駐プログラムのこと。Node.js・Apache・Nginx・MySQL も全部「ポートで待っているプログラム」です。<code>listen()</code> が呼ばれた時点で OS に登録され、TCP 待ち受けが開始されます。</div>
+    </div>
+
+    <div class="card">
+      <h3>Node.js のモジュールの種類</h3>
+      <table>
+        <tr><th>種類</th><th>例</th><th>require の書き方</th></tr>
+        <tr><td>標準（built-in）</td><td>http, fs, path, os, url</td><td>require("http")</td></tr>
+        <tr><td>外部（npm）</td><td>express, axios, prisma</td><td>require("express")</td></tr>
+        <tr><td>自作</td><td>app.js, utils.js</td><td>require("./app")</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Express を使う理由</h3>
+      <p>Node.js 標準の http だけではルーティングや JSON 処理を全部手書きする必要があり大変です。<strong>Express</strong> は http をラップして書きやすくしたフレームワークです。</p>
+      <table>
+        <tr><th>項目</th><th>http（標準）</th><th>express</th></tr>
+        <tr><td>レベル</td><td>低レベル</td><td>高レベル</td></tr>
+        <tr><td>記述量</td><td>多い</td><td>少ない</td></tr>
+        <tr><td>ルーティング</td><td>手書き</td><td>app.get() など</td></tr>
+        <tr><td>JSON 処理</td><td>手書き</td><td>express.json()</td></tr>
+        <tr><td>取得方法</td><td>標準（最初から）</td><td>npm install express</td></tr>
+      </table>
+      <pre><code>const express = require("express");
+const app = express();
+
+app.use(express.json());
+
+app.get("/", (req, res) => {
+  res.json({ message: "ok" });
+});
+
+app.listen(3000);</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>req と res の中身</h3>
+      <p>コールバックの <code>(req, res)</code> はそれぞれクライアントから送られてきた情報と、クライアントへ返す操作を持つオブジェクトです。</p>
+      <table>
+        <tr><th>オブジェクト</th><th>実体クラス</th><th>主な中身</th></tr>
+        <tr><td>req（Request）</td><td>IncomingMessage</td><td>url, method, headers, body, params, query</td></tr>
+        <tr><td>res（Response）</td><td>ServerResponse</td><td>json(), send(), end(), status(), setHeader(), redirect()</td></tr>
+      </table>
+      <pre><code>app.post("/todos", (req, res) => {
+  console.log(req.method);   // "POST"
+  console.log(req.url);      // "/todos"
+  console.log(req.body);     // { title: "task" }（express.json() が必要）
+  console.log(req.params.id);// URL の :id パラメータ
+  console.log(req.query.page);// ?page=1 のクエリ
+
+  res.status(201).json({ success: true });
+});</code></pre>
+      <pre><code>// HTTP レスポンスの実体（res.json() が自動生成するもの）
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+{"success":true}</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>Content-Type とは</h3>
+      <p>送るデータの種類をヘッダーで知らせる仕組みです。これがないとサーバーもブラウザも「何のデータか」が分かりません。</p>
+      <table>
+        <tr><th>Content-Type</th><th>意味</th><th>用途</th></tr>
+        <tr><td>application/json</td><td>JSON</td><td>API 通信（現在の主流）</td></tr>
+        <tr><td>text/plain</td><td>テキスト</td><td>文字列</td></tr>
+        <tr><td>text/html</td><td>HTML</td><td>ページ返却</td></tr>
+        <tr><td>multipart/form-data</td><td>フォーム＋ファイル</td><td>ファイルアップロード</td></tr>
+        <tr><td>application/x-www-form-urlencoded</td><td>フォーム</td><td>HTML フォーム送信</td></tr>
+      </table>
+      <pre><code>// Node.js（手動設定）
+res.setHeader("Content-Type", "application/json");
+res.end(JSON.stringify({ ok: true }));
+
+// Express（自動設定）
+res.json({ ok: true });   // Content-Type: application/json を自動付与</code></pre>
+      <div class="tip"><strong>よくあるエラー：</strong> フロントで <code>Content-Type: application/json</code> を付けずに送ると、サーバーで <code>express.json()</code> が動かず <code>req.body</code> が <code>undefined</code> になります。</div>
+    </div>
+
+    <div class="card">
+      <h3>JSON の受け渡し（フロント ⇄ サーバー）</h3>
+      <p>JSON 通信に必要な要素は <strong>5 つ</strong>です。</p>
+      <table>
+        <tr><th>側</th><th>必要なもの</th><th>理由</th></tr>
+        <tr><td rowspan="3">フロント（送信）</td><td>method</td><td>POST / PUT など操作を指定</td></tr>
+        <tr><td>Content-Type: application/json</td><td>サーバーに「JSON を送る」と伝える</td></tr>
+        <tr><td>JSON.stringify(data)</td><td>HTTP は文字しか送れないため変換が必要</td></tr>
+        <tr><td rowspan="2">サーバー（受信）</td><td>app.use(express.json())</td><td>文字列の body を JSON にパースして req.body に入れる</td></tr>
+        <tr><td>res.json()</td><td>JSON に変換して Content-Type を自動付与して返す</td></tr>
+      </table>
+      <pre><code>// フロント（送信）
+fetch("/api/todos", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ title: "task" })
+})
+.then(res => res.json())      // 文字列 → JSON に変換
+.then(data => console.log(data));
+
+// サーバー（受信・返却）
+app.use(express.json());      // これがないと req.body が undefined
+
+app.post("/api/todos", (req, res) => {
+  console.log(req.body.title); // "task"
+  res.status(201).json({ success: true });
+});</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>REST API とは</h3>
+      <p><strong>REST</strong> = Web の設計ルール。URL でリソース（データ）を表し、HTTP メソッドで操作します。</p>
+      <table>
+        <tr><th>REST のルール</th><th>例</th></tr>
+        <tr><td>URL は名詞（動詞は使わない）</td><td>✅ /users ❌ /getUsers</td></tr>
+        <tr><td>操作は HTTP メソッドで表す</td><td>GET/POST/PUT/PATCH/DELETE</td></tr>
+        <tr><td>データは JSON でやり取り</td><td>application/json</td></tr>
+        <tr><td>ステートレス（状態を持たない）</td><td>毎回 token や cookie を送る</td></tr>
+        <tr><td>ステータスコードを使う</td><td>200/201/204/400/404/500</td></tr>
+      </table>
+      <table>
+        <tr><th>操作</th><th>メソッド</th><th>URL</th><th>Express</th></tr>
+        <tr><td>一覧取得</td><td>GET</td><td>/todos</td><td>app.get("/todos")</td></tr>
+        <tr><td>1件取得</td><td>GET</td><td>/todos/1</td><td>app.get("/todos/:id")</td></tr>
+        <tr><td>作成</td><td>POST</td><td>/todos</td><td>app.post("/todos")</td></tr>
+        <tr><td>更新</td><td>PUT / PATCH</td><td>/todos/1</td><td>app.patch("/todos/:id")</td></tr>
+        <tr><td>削除</td><td>DELETE</td><td>/todos/1</td><td>app.delete("/todos/:id")</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Express の app メソッド一覧</h3>
+      <p><code>const app = express()</code> で作られる <code>app</code> オブジェクトに使えるメソッドの分類です。</p>
+      <table>
+        <tr><th>分類</th><th>メソッド</th><th>意味</th></tr>
+        <tr><td>起動</td><td>app.listen(port)</td><td>ポート待ち受け開始</td></tr>
+        <tr><td rowspan="6">ルーティング</td><td>app.get(path, handler)</td><td>GET</td></tr>
+        <tr><td>app.post(path, handler)</td><td>POST</td></tr>
+        <tr><td>app.put(path, handler)</td><td>PUT</td></tr>
+        <tr><td>app.patch(path, handler)</td><td>PATCH</td></tr>
+        <tr><td>app.delete(path, handler)</td><td>DELETE</td></tr>
+        <tr><td>app.all(path, handler)</td><td>全メソッド</td></tr>
+        <tr><td rowspan="4">ミドルウェア</td><td>app.use(fn)</td><td>全リクエストに処理を登録</td></tr>
+        <tr><td>express.json()</td><td>body を JSON にパース</td></tr>
+        <tr><td>express.urlencoded()</td><td>フォームデータをパース</td></tr>
+        <tr><td>express.static(dir)</td><td>静的ファイル配信</td></tr>
+        <tr><td>Router</td><td>express.Router()</td><td>ルートをファイルに分割</td></tr>
+        <tr><td>設定</td><td>app.set(key, val)</td><td>アプリ設定（テンプレートエンジンなど）</td></tr>
+      </table>
+      <pre><code>const express = require("express");
+const app = express();
+
+// ミドルウェア（全リクエストに適用）
+app.use(express.json());
+app.use(cors());
+
+// ルーティング
+app.get("/todos", (req, res) => { res.json([]); });
+app.post("/todos", (req, res) => { res.status(201).json({}); });
+
+// Router で分割
+app.use("/api/todos", todoRouter);
+
+// エラーハンドラー（引数 4 つが必須）
+app.use((err, req, res, next) => {
+  res.status(500).json({ error: err.message });
+});
+
+app.listen(3000);</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>ミドルウェアとルートハンドラーの違い</h3>
+      <p>Express はリクエストが来たとき、登録された処理を<strong>上から順番に</strong>実行します。</p>
+      <table>
+        <tr><th>種類</th><th>役割</th><th>next</th><th>res を返す</th></tr>
+        <tr><td>ミドルウェア</td><td>途中で処理する（ログ・認証・JSON パースなど）</td><td>必須</td><td>任意</td></tr>
+        <tr><td>ルートハンドラー</td><td>URL に一致したとき最後に実行する</td><td>任意</td><td>必須</td></tr>
+        <tr><td>エラーミドルウェア</td><td>next(err) が呼ばれたとき実行</td><td>—</td><td>必須</td></tr>
+      </table>
+      <pre><code>// リクエストの流れ
+Request
+ ↓
+app.use(cors())          // ミドルウェア①
+ ↓
+app.use(express.json())  // ミドルウェア②（body をパース）
+ ↓
+router.use(auth)         // ミドルウェア③（認証チェック）
+ ↓
+router.get("/todos", handler)  // ルートハンドラー（レスポンス返す）
+ ↓
+app.use(errorHandler)    // エラーミドルウェア（エラー時のみ）
+ ↓
+Response</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>app.use とは</h3>
+      <p><code>app.use(fn)</code> は<strong>すべてのリクエストに対して fn を実行する処理を登録する</strong>関数です。Express 内部では配列（スタック）に登録し、リクエストが来るたびに順番に実行します。</p>
+      <pre><code>// Express 内部のイメージ
+stack = [mw1, mw2, mw3, routeHandler, errorHandler]
+
+// next() = 配列の次の関数を呼ぶ
+function run(index) {
+  const fn = stack[index];
+  fn(req, res, function next() { run(index + 1); });
+}
+run(0);</code></pre>
+      <table>
+        <tr><th>next() の種類</th><th>意味</th></tr>
+        <tr><td>next()</td><td>次のミドルウェアへ進む</td></tr>
+        <tr><td>next(err)</td><td>エラーミドルウェアへジャンプ</td></tr>
+        <tr><td>next 呼ばない</td><td>そこで止まる（ルートハンドラーに届かない）</td></tr>
+      </table>
+      <pre><code>// next() の基本
+app.use((req, res, next) => {
+  console.log("通過");
+  next();         // これを呼ばないとハンドラーに届かない
+});
+
+// エラーを next に渡す（async では必須）
+app.get("/todos", async (req, res, next) => {
+  try {
+    const data = await db.query();
+    res.json(data);
+  } catch (err) {
+    next(err);    // エラーミドルウェアへ
+  }
+});
+
+// エラーミドルウェア（引数が 4 つ = 必須）
+app.use((err, req, res, next) => {
+  res.status(500).json({ error: err.message });
+});</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>バックエンドの基本構成（実務）</h3>
+      <p>実務ではコードを役割ごとにファイル分割します。</p>
+      <pre><code>src/
+  app.js          // Express 設定・ミドルウェア登録
+  routes/         // URL とコントローラーの対応
+  controllers/    // リクエスト受け取り・レスポンス返す
+  services/       // ビジネスロジック
+  repositories/   // DB アクセス
+  models/         // 型・スキーマ定義</code></pre>
+      <table>
+        <tr><th>層</th><th>役割</th><th>例</th></tr>
+        <tr><td>routes</td><td>URL と controller をつなぐ</td><td>POST /todos → todoCreateController</td></tr>
+        <tr><td>controllers</td><td>req を受けて res を返す入口</td><td>req.body を受け取り service を呼ぶ</td></tr>
+        <tr><td>services</td><td>ビジネスロジックの処理</td><td>バリデーション・加工・条件判定</td></tr>
+        <tr><td>repositories</td><td>DB アクセスのみ担当</td><td>INSERT / SELECT / UPDATE / DELETE</td></tr>
+        <tr><td>models</td><td>型・スキーマ定義</td><td>Todo の型、DB テーブル定義</td></tr>
+      </table>
+      <pre><code>// リクエストの流れ
+POST /todos
+ ↓ routes/todo.js
+ ↓ controllers/todoCreateController.js
+ ↓ services/todoService.js
+ ↓ repositories/todoRepository.js
+ ↓ DB
+ ↓ res.status(201).json()</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>ポートとは / 非同期が重要な理由</h3>
+      <table>
+        <tr><th>ポート番号</th><th>用途</th></tr>
+        <tr><td>3000</td><td>Node.js / Express API サーバー</td></tr>
+        <tr><td>5173</td><td>Vite（React 開発サーバー）</td></tr>
+        <tr><td>3306</td><td>MySQL</td></tr>
+        <tr><td>5432</td><td>PostgreSQL</td></tr>
+        <tr><td>6379</td><td>Redis</td></tr>
+        <tr><td>80 / 443</td><td>HTTP / HTTPS（本番）</td></tr>
+      </table>
+      <p style="margin-top:12px">Node.js では DB・外部 API・ファイルなど <strong>「待ち時間が発生する処理」がすべて非同期</strong>です。<code>await</code> を付け忘れると undefined が返ります。</p>
+      <pre><code>// ❌ await なし → undefined が返る
+app.get("/todos", async (req, res) => {
+  const todos = db.findAll();   // Promise が返るが await していない
+  res.json(todos);              // undefined
+});
+
+// ✅ await あり
+app.get("/todos", async (req, res) => {
+  const todos = await db.findAll();
+  res.json(todos);
+});</code></pre>
+    </div>
+
+    <div class="tip"><strong>💡 全体のまとめ：</strong> クライアント ⇄ HTTP（メソッド + ステータス + JSON） ⇄ Express（ミドルウェア + ルートハンドラー） ⇄ DB。この流れが理解できるとバックエンドの全体像が見えてきます。</div>
+  </section>
+
   <!-- Node.js -->
-  <section class="section active" id="nodejs">
+  <section class="section" id="nodejs">
     <div class="section-header">
       <div class="icon">🟢</div>
       <h2>Node.js</h2>
@@ -745,58 +1139,178 @@ npx vite</code></pre>
 
     <div class="card">
       <h3>Laravel とは？</h3>
-      <p>Laravel は <strong>PHP</strong> で書かれたフルスタック Web フレームワークです。「エレガントな文法」を理念に掲げ、MVC アーキテクチャを採用。認証・ルーティング・ORM（Eloquent）・マイグレーション・キューなど Web 開発に必要な機能が一通り揃っています。</p>
+      <p>Laravel は <strong>PHP で書かれたフルスタック Web フレームワーク</strong>です。「エレガントな文法」を理念に掲げ、MVC アーキテクチャを採用。ルーティング・ORM（Eloquent）・マイグレーション・認証・キューなど Web 開発に必要な機能がすべて揃っています。</p>
+      <pre><code>Laravel = PHP のフレームワーク（Node.js における Express の上位互換に相当）</code></pre>
+      <table>
+        <tr><th>特徴</th><th>内容</th></tr>
+        <tr><td>MVC アーキテクチャ</td><td>Model / View / Controller でコードを整理</td></tr>
+        <tr><td>Eloquent ORM</td><td>SQL を書かずにオブジェクト指向で DB 操作</td></tr>
+        <tr><td>Blade テンプレート</td><td>PHP と HTML を組み合わせたテンプレートエンジン</td></tr>
+        <tr><td>Artisan CLI</td><td>コード生成・マイグレーション・キャッシュ操作を CLI で実行</td></tr>
+        <tr><td>Composer 管理</td><td>パッケージは Composer（PHP の npm）で管理</td></tr>
+      </table>
     </div>
 
     <div class="card">
-      <h3>プロジェクト作成</h3>
-      <pre><code># Composer を使ってプロジェクト作成
+      <h3>Node.js / npm との対比</h3>
+      <table>
+        <tr><th>Node.js / npm</th><th>Laravel / PHP</th><th>役割</th></tr>
+        <tr><td>npm</td><td>Composer</td><td>パッケージ管理ツール</td></tr>
+        <tr><td>package.json</td><td>composer.json</td><td>依存関係の設定ファイル</td></tr>
+        <tr><td>package-lock.json</td><td>composer.lock</td><td>バージョン固定ファイル</td></tr>
+        <tr><td>node_modules/</td><td>vendor/</td><td>パッケージ本体の格納先</td></tr>
+        <tr><td>npm install</td><td>composer install</td><td>パッケージをインストール</td></tr>
+        <tr><td>npm run dev</td><td>php artisan serve</td><td>開発サーバー起動</td></tr>
+        <tr><td>Express</td><td>Laravel</td><td>Web フレームワーク</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>プロジェクト作成〜起動の流れ</h3>
+      <pre><code># ① Composer でプロジェクト作成
 composer create-project laravel/laravel my-app
 
-# または Laravel インストーラー
+# または Laravel インストーラーを使う場合
 composer global require laravel/installer
 laravel new my-app
 
-# 開発サーバー起動
+# ② プロジェクトに移動
 cd my-app
+
+# ③ .env を設定（DB 接続情報など）
+cp .env.example .env
+php artisan key:generate
+
+# ④ DB マイグレーション実行
+php artisan migrate
+
+# ⑤ 開発サーバー起動
 php artisan serve
 # → http://localhost:8000</code></pre>
     </div>
 
     <div class="card">
-      <h3>ディレクトリ構造（主要なもの）</h3>
+      <h3>ディレクトリ構造</h3>
       <table>
         <tr><th>パス</th><th>役割</th></tr>
-        <tr><td><code>app/Http/Controllers/</code></td><td>コントローラー</td></tr>
-        <tr><td><code>app/Models/</code></td><td>Eloquent モデル</td></tr>
-        <tr><td><code>routes/web.php</code></td><td>Web ルーティング</td></tr>
-        <tr><td><code>routes/api.php</code></td><td>API ルーティング</td></tr>
-        <tr><td><code>resources/views/</code></td><td>Blade テンプレート</td></tr>
-        <tr><td><code>database/migrations/</code></td><td>マイグレーションファイル</td></tr>
-        <tr><td><code>.env</code></td><td>環境設定（DB接続など）</td></tr>
+        <tr><td><code>app/Http/Controllers/</code></td><td>コントローラー（リクエスト処理）</td></tr>
+        <tr><td><code>app/Http/Middleware/</code></td><td>ミドルウェア（認証・ログなど）</td></tr>
+        <tr><td><code>app/Models/</code></td><td>Eloquent モデル（DB とのやり取り）</td></tr>
+        <tr><td><code>routes/web.php</code></td><td>Web ルーティング（画面返す）</td></tr>
+        <tr><td><code>routes/api.php</code></td><td>API ルーティング（JSON 返す）</td></tr>
+        <tr><td><code>resources/views/</code></td><td>Blade テンプレート（HTML）</td></tr>
+        <tr><td><code>database/migrations/</code></td><td>DB テーブル定義ファイル</td></tr>
+        <tr><td><code>database/seeders/</code></td><td>テストデータ投入ファイル</td></tr>
+        <tr><td><code>config/</code></td><td>各種設定ファイル</td></tr>
+        <tr><td><code>storage/</code></td><td>ログ・ファイルアップロード・キャッシュ</td></tr>
+        <tr><td><code>public/</code></td><td>Web 公開ディレクトリ（index.php がここ）</td></tr>
+        <tr><td><code>.env</code></td><td>環境変数（DB 接続情報・APIキーなど）</td></tr>
+        <tr><td><code>vendor/</code></td><td>Composer でインストールしたパッケージ（.gitignore に追加）</td></tr>
       </table>
     </div>
 
     <div class="card">
-      <h3>Artisan コマンド（よく使うもの）</h3>
-      <pre><code># コントローラー作成
-php artisan make:controller UserController
+      <h3>.env ファイルとは</h3>
+      <p>プロジェクトの<strong>環境変数を管理するファイル</strong>です。DB 接続情報・API キーなどを記述します。Git には含めず（<code>.gitignore</code> に追加）、<code>.env.example</code> をテンプレートとしてチームで共有します。</p>
+      <pre><code>APP_NAME=Laravel
+APP_ENV=local
+APP_KEY=base64:...
+APP_DEBUG=true
+APP_URL=http://localhost
 
-# モデル + マイグレーション作成
-php artisan make:model Post -m
-
-# マイグレーション実行
-php artisan migrate
-
-# ルーティング一覧表示
-php artisan route:list
-
-# キャッシュクリア
-php artisan cache:clear
-php artisan config:clear</code></pre>
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=my_database
+DB_USERNAME=root
+DB_PASSWORD=secret</code></pre>
+      <div class="tip"><strong>config() で読み込む：</strong> <code>.env</code> の値は <code>config/</code> 経由で参照します。直接 <code>env('DB_HOST')</code> と書くよりも <code>config('database.connections.mysql.host')</code> が推奨です（キャッシュの影響のため）。</div>
     </div>
 
-    <div class="tip"><strong>💡 Laravel の強み：</strong> Eloquent ORM、Blade テンプレートエンジン、Laravel Sanctum（API 認証）、Laravel Breeze（スターターキット）など、エコシステムが非常に充実しています。</div>
+    <div class="card">
+      <h3>MVC の流れ（リクエストからレスポンスまで）</h3>
+      <pre><code>ブラウザ / クライアント
+        ↓ HTTP リクエスト
+public/index.php  （エントリーポイント）
+        ↓
+ミドルウェア       （認証チェック・ログ記録など）
+        ↓
+routes/web.php    （URL と処理を対応付け）
+        ↓
+Controller        （リクエスト処理・ビジネスロジック）
+        ↓
+Model             （DB からデータ取得・保存）
+        ↓
+View（Blade）     （HTML を生成）
+        ↓ HTTP レスポンス
+ブラウザ / クライアント</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>Artisan コマンド一覧（よく使うもの）</h3>
+      <p><strong>Artisan</strong> = Laravel に付属する CLI ツール。<code>php artisan</code> から実行します。</p>
+      <table>
+        <tr><th>コマンド</th><th>意味</th></tr>
+        <tr><td>php artisan serve</td><td>開発サーバー起動（localhost:8000）</td></tr>
+        <tr><td>php artisan make:controller UserController</td><td>コントローラー作成</td></tr>
+        <tr><td>php artisan make:controller UserController --resource</td><td>CRUD メソッド付きコントローラー作成</td></tr>
+        <tr><td>php artisan make:model Post -m</td><td>モデル + マイグレーション作成</td></tr>
+        <tr><td>php artisan make:middleware CheckAge</td><td>ミドルウェア作成</td></tr>
+        <tr><td>php artisan make:seeder UserSeeder</td><td>シーダー作成</td></tr>
+        <tr><td>php artisan migrate</td><td>マイグレーション実行</td></tr>
+        <tr><td>php artisan migrate:rollback</td><td>1つ前に戻す</td></tr>
+        <tr><td>php artisan migrate:fresh --seed</td><td>全リセット＋シーダー実行</td></tr>
+        <tr><td>php artisan db:seed</td><td>シーダー（テストデータ）投入</td></tr>
+        <tr><td>php artisan route:list</td><td>登録済みルート一覧表示</td></tr>
+        <tr><td>php artisan key:generate</td><td>APP_KEY 生成（初回セットアップ時）</td></tr>
+        <tr><td>php artisan cache:clear</td><td>キャッシュクリア</td></tr>
+        <tr><td>php artisan config:clear</td><td>設定キャッシュクリア</td></tr>
+        <tr><td>php artisan optimize</td><td>本番用キャッシュ生成</td></tr>
+        <tr><td>php artisan tinker</td><td>対話型 REPL（DB 操作の確認など）</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>認証・スターターキット</h3>
+      <table>
+        <tr><th>パッケージ</th><th>用途</th></tr>
+        <tr><td>Laravel Breeze</td><td>シンプルな認証スターターキット（セッション認証）</td></tr>
+        <tr><td>Laravel Sanctum</td><td>SPA・モバイル向け API 認証（トークン認証）</td></tr>
+        <tr><td>Laravel Passport</td><td>OAuth2 サーバー実装（大規模 API 向け）</td></tr>
+      </table>
+      <pre><code># Breeze インストール（シンプルな認証 UI）
+composer require laravel/breeze --dev
+php artisan breeze:install
+npm install &amp;&amp; npm run dev
+php artisan migrate
+
+# Sanctum インストール（API トークン認証）
+composer require laravel/sanctum
+php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+php artisan migrate</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>本番デプロイ時の流れ</h3>
+      <pre><code># ① パッケージインストール（本番用のみ）
+composer install --no-dev --optimize-autoloader
+
+# ② 環境設定
+php artisan key:generate
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# ③ マイグレーション
+php artisan migrate --force
+
+# ④ フロントエンドビルド（必要な場合）
+npm ci
+npm run build</code></pre>
+      <div class="tip"><strong>--no-dev：</strong> Composer の <code>require-dev</code> パッケージ（phpunit など）を除外して本番を軽くします。npm の <code>--production</code> に相当します。</div>
+    </div>
+
+    <div class="tip"><strong>💡 Laravel の強み：</strong> Eloquent ORM・Blade・Sanctum・Breeze など充実したエコシステム。「ゼロから書く量を最小に、読みやすいコードを最大に」という思想で設計されています。</div>
   </section>
 
   <!-- Composer -->
@@ -808,37 +1322,57 @@ php artisan config:clear</code></pre>
 
     <div class="card">
       <h3>Composer とは？</h3>
-      <p>Composer は <strong>PHP のパッケージ管理ツール</strong>です。npm の PHP 版と考えると分かりやすいです。<code>composer.json</code> に依存パッケージを記述し、<code>composer install</code> でライブラリを自動的にダウンロード・管理します。<strong>Packagist</strong>（パッケージレジストリ）から取得します。</p>
+      <p>Composer は <strong>PHP のパッケージ管理ツール</strong>です。npm の PHP 版と考えると分かりやすいです。<code>composer.json</code> に依存パッケージを記述し、<code>composer install</code> でライブラリを自動的にダウンロード・管理します。パッケージは <strong>Packagist</strong>（PHP のレジストリ）から取得します。</p>
+      <pre><code>Composer = PHP の npm
+Packagist = PHP の npm レジストリ
+composer.json = package.json
+vendor/ = node_modules/</code></pre>
     </div>
 
     <div class="card">
-      <h3>よく使うコマンド</h3>
-      <pre><code># プロジェクト初期化
-composer init
+      <h3>npm との完全対比</h3>
+      <table>
+        <tr><th>npm（Node.js）</th><th>Composer（PHP）</th><th>役割</th></tr>
+        <tr><td>npm</td><td>composer</td><td>パッケージ管理ツール</td></tr>
+        <tr><td>npm レジストリ</td><td>Packagist</td><td>パッケージ公開・配布場所</td></tr>
+        <tr><td>package.json</td><td>composer.json</td><td>設定・依存関係ファイル</td></tr>
+        <tr><td>package-lock.json</td><td>composer.lock</td><td>バージョン固定ファイル</td></tr>
+        <tr><td>node_modules/</td><td>vendor/</td><td>パッケージ本体の格納先</td></tr>
+        <tr><td>npm install pkg</td><td>composer require pkg</td><td>パッケージ追加</td></tr>
+        <tr><td>npm install -D pkg</td><td>composer require --dev pkg</td><td>開発用パッケージ追加</td></tr>
+        <tr><td>npm install</td><td>composer install</td><td>全パッケージをインストール</td></tr>
+        <tr><td>npm ci</td><td>composer install（lock 基準）</td><td>lock ファイルどおりにインストール</td></tr>
+        <tr><td>npm install --production</td><td>composer install --no-dev</td><td>本番用のみインストール</td></tr>
+        <tr><td>import / require</td><td>use / require autoload.php</td><td>パッケージを読み込む</td></tr>
+      </table>
+    </div>
 
-# パッケージのインストール
+    <div class="card">
+      <h3>パッケージを使う流れ</h3>
+      <pre><code># ① プロジェクト初期化
+composer init         // composer.json 作成
+
+# ② パッケージインストール
 composer require guzzlehttp/guzzle
+                      // ③ vendor/guzzlehttp/guzzle/ に保存
+                      // ④ composer.json の require に記録
+                      // ⑤ composer.lock 更新
 
-# 開発用パッケージのインストール
-composer require --dev phpunit/phpunit
+# ⑥ コードで読み込む
+require __DIR__ . '/vendor/autoload.php';  // オートロード読み込み（1回だけ）
 
-# 全パッケージをインストール（composer.lock 基準）
-composer install
+use GuzzleHttp\Client;                    // クラスを use で指定
 
-# パッケージを最新に更新
-composer update
-
-# オートロードの再生成
-composer dump-autoload
-
-# インストール済みパッケージ一覧
-composer show</code></pre>
+$client = new Client();
+$response = $client->get('https://api.example.com/users');</code></pre>
+      <div class="tip"><strong>Node.js との違い：</strong> npm では <code>require("pkg")</code> や <code>import</code> で即使えますが、PHP では <code>vendor/autoload.php</code> を1回読み込んでから <code>use クラス名</code> で使います。</div>
     </div>
 
     <div class="card">
-      <h3>composer.json の例</h3>
+      <h3>composer.json の詳細</h3>
       <pre><code>{
   "name": "my/app",
+  "description": "My Laravel Application",
   "require": {
     "php": "^8.2",
     "laravel/framework": "^11.0",
@@ -846,28 +1380,113 @@ composer show</code></pre>
   },
   "require-dev": {
     "phpunit/phpunit": "^10.0",
-    "laravel/pint": "^1.0"
+    "laravel/pint": "^1.0",
+    "fakerphp/faker": "^1.9"
   },
   "autoload": {
     "psr-4": {
       "App\\": "app/"
     }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "post-update-cmd": [
+      "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
+    ]
   }
 }</code></pre>
+      <table>
+        <tr><th>フィールド</th><th>内容</th><th>npm 対応</th></tr>
+        <tr><td>require</td><td>本番用パッケージ</td><td>dependencies</td></tr>
+        <tr><td>require-dev</td><td>開発用パッケージ</td><td>devDependencies</td></tr>
+        <tr><td>autoload</td><td>本番クラスの自動読み込み設定</td><td>—</td></tr>
+        <tr><td>autoload-dev</td><td>開発用クラスの自動読み込み設定</td><td>—</td></tr>
+        <tr><td>scripts</td><td>Composer コマンド実行時のフック</td><td>scripts</td></tr>
+      </table>
     </div>
 
     <div class="card">
-      <h3>オートロード（PSR-4）</h3>
-      <p>Composer は <strong>PSR-4 規約</strong>に基づいてクラスを自動読み込みします。<code>require vendor/autoload.php</code> を一度読み込むだけで、全クラスを <code>use</code> 文で使えるようになります。</p>
-      <pre><code>require __DIR__ . '/vendor/autoload.php';
-
-use GuzzleHttp\Client;
-
-$client = new Client();
-$response = $client->get('https://api.example.com/users');</code></pre>
+      <h3>require vs require-dev</h3>
+      <table>
+        <tr><th>項目</th><th>require</th><th>require-dev</th></tr>
+        <tr><td>用途</td><td>本番でも必要なパッケージ</td><td>開発・テスト時のみ必要</td></tr>
+        <tr><td>本番に含まれる</td><td>✅</td><td>❌（--no-dev で除外）</td></tr>
+        <tr><td>追加コマンド</td><td>composer require pkg</td><td>composer require --dev pkg</td></tr>
+      </table>
+      <table>
+        <tr><th>require の例</th><th>require-dev の例</th></tr>
+        <tr><td>laravel/framework, guzzlehttp/guzzle</td><td>phpunit/phpunit, laravel/pint, fakerphp/faker</td></tr>
+      </table>
+      <pre><code># 本番用のみインストール（require-dev を除外）
+composer install --no-dev --optimize-autoloader</code></pre>
     </div>
 
-    <div class="tip"><strong>💡 npm との比較：</strong> <code>composer.json</code> ≒ <code>package.json</code>、<code>composer.lock</code> ≒ <code>package-lock.json</code>、<code>vendor/</code> ≒ <code>node_modules/</code> です。<code>vendor/</code> も <code>.gitignore</code> に追加します。</div>
+    <div class="card">
+      <h3>composer install vs composer update</h3>
+      <table>
+        <tr><th>項目</th><th>composer install</th><th>composer update</th></tr>
+        <tr><td>参照先</td><td>composer.lock（固定バージョン）</td><td>composer.json（範囲内で最新）</td></tr>
+        <tr><td>lock の更新</td><td>しない</td><td>する</td></tr>
+        <tr><td>用途</td><td>既存環境の再現（CI・本番・チーム開発）</td><td>パッケージを意図的に更新したいとき</td></tr>
+        <tr><td>npm の対応</td><td>npm ci</td><td>npm update</td></tr>
+      </table>
+      <div class="tip"><strong>git clone 後：</strong> <code>composer install</code> を実行します（update は意図しないバージョン変更が起きるため通常は使いません）。</div>
+    </div>
+
+    <div class="card">
+      <h3>オートロード（PSR-4）とは</h3>
+      <p>PHP でクラスを <code>require</code> なしに自動で読み込む仕組みです。Composer が <code>vendor/autoload.php</code> を生成し、名前空間とディレクトリを対応付けます。</p>
+      <pre><code>// autoload 設定（composer.json）
+"autoload": {
+  "psr-4": {
+    "App\\": "app/"   // App\ 名前空間 → app/ フォルダに対応
+  }
+}
+
+// 使い方：vendor/autoload.php を1回読み込むだけで OK
+require __DIR__ . '/vendor/autoload.php';
+
+use App\Models\User;          // app/Models/User.php が自動で読まれる
+use GuzzleHttp\Client;        // vendor/guzzlehttp/... が自動で読まれる
+
+$user = new User();
+$client = new Client();</code></pre>
+      <pre><code># クラスの追加・変更後はオートロードを再生成
+composer dump-autoload
+composer dump-autoload -o  # 本番向け最適化版</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>composer.lock と vendor/ の扱い</h3>
+      <ul class="list">
+        <li><code>composer.lock</code>：インストールされたパッケージの正確なバージョンを記録。<strong>Git に含める</strong>（チーム全員が同じバージョンを使えるようにする）</li>
+        <li><code>vendor/</code>：パッケージ本体が入るフォルダ。容量が大きいため <strong>.gitignore に追加</strong>して Git 管理外にする。clone 後に <code>composer install</code> で再生成する</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Composer コマンド一覧</h3>
+      <table>
+        <tr><th>コマンド</th><th>意味</th></tr>
+        <tr><td>composer init</td><td>composer.json を対話形式で作成</td></tr>
+        <tr><td>composer install</td><td>composer.lock に従って全パッケージをインストール</td></tr>
+        <tr><td>composer install --no-dev</td><td>require のみインストール（本番用）</td></tr>
+        <tr><td>composer update</td><td>composer.json の範囲で最新に更新</td></tr>
+        <tr><td>composer require pkg</td><td>パッケージを追加（require に記録）</td></tr>
+        <tr><td>composer require --dev pkg</td><td>開発用パッケージを追加（require-dev に記録）</td></tr>
+        <tr><td>composer remove pkg</td><td>パッケージを削除</td></tr>
+        <tr><td>composer show</td><td>インストール済みパッケージ一覧</td></tr>
+        <tr><td>composer dump-autoload</td><td>オートロードを再生成</td></tr>
+        <tr><td>composer dump-autoload -o</td><td>本番向け最適化でオートロード再生成</td></tr>
+        <tr><td>composer create-project laravel/laravel app</td><td>Laravel プロジェクトを作成</td></tr>
+      </table>
+    </div>
+
+    <div class="tip"><strong>💡 まとめ：</strong> <code>composer.json</code> が設定、<code>vendor/</code> が本体、<code>composer install</code> で再現。Git には <code>composer.lock</code> を含め、<code>vendor/</code> は除外するのが基本です。</div>
   </section>
 
   <!-- ルーティング -->
