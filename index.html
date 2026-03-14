@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web開発ハンドブック（バックエンド）</title>
+  <style>
+    :root {
+      --green-dark:   #1b4332;
+      --green-mid:    #2d6a4f;
+      --green-main:   #40916c;
+      --green-light:  #74c69d;
+      --green-pale:   #d8f3dc;
+      --green-bg:     #f0faf3;
+      --text-dark:    #1a2e1e;
+      --text-mid:     #2d4a32;
+      --text-light:   #f8fff9;
+      --border:       #b7e4c7;
+      --code-bg:      #e8f5e9;
+      --shadow:       rgba(45, 106, 79, 0.15);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+      background: var(--green-bg);
+      color: var(--text-dark);
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── サイドナビ ── */
+    #sidebar {
+      width: 240px;
+      min-width: 240px;
+      background: var(--green-dark);
+      position: fixed;
+      top: 0; left: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 100;
+      box-shadow: 2px 0 12px var(--shadow);
+    }
+
+    #sidebar h1 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--green-pale);
+      padding: 24px 20px 16px;
+      border-bottom: 1px solid var(--green-mid);
+      line-height: 1.5;
+      letter-spacing: 0.05em;
+    }
+
+    #sidebar nav ul {
+      list-style: none;
+      padding: 10px 0;
+    }
+
+    #sidebar nav ul li a {
+      display: block;
+      padding: 11px 22px;
+      color: #a8d8b9;
+      text-decoration: none;
+      font-size: 0.92rem;
+      transition: background 0.2s, color 0.2s;
+      border-left: 3px solid transparent;
+    }
+
+    #sidebar nav ul li a:hover,
+    #sidebar nav ul li a.active {
+      background: var(--green-mid);
+      color: #fff;
+      border-left-color: var(--green-light);
+    }
+
+    /* ── メインコンテンツ ── */
+    #main {
+      margin-left: 240px;
+      flex: 1;
+      padding: 48px 56px;
+      max-width: 960px;
+    }
+
+    /* ── セクション ── */
+    .section {
+      display: none;
+    }
+    .section.active {
+      display: block;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--green-light);
+    }
+
+    .section-header .icon {
+      width: 44px;
+      height: 44px;
+      background: var(--green-main);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .section-header h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--green-dark);
+    }
+
+    /* カード */
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 22px;
+      box-shadow: 0 2px 8px var(--shadow);
+    }
+
+    .card h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--green-mid);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card h3::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 1em;
+      background: var(--green-main);
+      border-radius: 2px;
+    }
+
+    .card p {
+      font-size: 0.93rem;
+      line-height: 1.85;
+      color: var(--text-mid);
+    }
+
+    /* コードブロック */
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 18px;
+      margin: 14px 0;
+      overflow-x: auto;
+      font-size: 0.85rem;
+      line-height: 1.7;
+    }
+
+    code {
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      color: var(--green-dark);
+    }
+
+    p > code, li > code {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-size: 0.85em;
+    }
+
+    /* リスト */
+    ul.list, ol.list {
+      padding-left: 22px;
+      margin: 10px 0;
+    }
+
+    ul.list li, ol.list li {
+      font-size: 0.93rem;
+      line-height: 1.85;
+      color: var(--text-mid);
+      margin-bottom: 4px;
+    }
+
+    /* バッジ */
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    .badge-green {
+      background: var(--green-pale);
+      color: var(--green-dark);
+    }
+
+    /* テーブル */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin: 14px 0;
+    }
+
+    th {
+      background: var(--green-main);
+      color: #fff;
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    td {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-mid);
+    }
+
+    tr:nth-child(even) td {
+      background: var(--green-pale);
+    }
+
+    /* ヒントボックス */
+    .tip {
+      background: var(--green-pale);
+      border-left: 4px solid var(--green-main);
+      border-radius: 0 8px 8px 0;
+      padding: 12px 16px;
+      margin: 12px 0;
+      font-size: 0.88rem;
+      color: var(--text-mid);
+      line-height: 1.7;
+    }
+
+    .tip strong {
+      color: var(--green-dark);
+    }
+
+    /* スクロールバー */
+    #sidebar::-webkit-scrollbar { width: 5px; }
+    #sidebar::-webkit-scrollbar-track { background: var(--green-dark); }
+    #sidebar::-webkit-scrollbar-thumb { background: var(--green-mid); border-radius: 3px; }
+
+    @media (max-width: 700px) {
+      #sidebar { width: 100%; height: auto; position: relative; }
+      #main { margin-left: 0; padding: 24px 18px; }
+      body { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── サイドナビ ── -->
+<aside id="sidebar">
+  <h1>Web開発<br>ハンドブック<br>（バックエンド）</h1>
+  <nav>
+    <ul>
+      <li><a href="#" data-target="nodejs" class="active">🟢 Node.js</a></li>
+      <li><a href="#" data-target="npm">📦 npm とは</a></li>
+      <li><a href="#" data-target="laravel">🔴 Laravel</a></li>
+      <li><a href="#" data-target="composer">🎼 Composer とは</a></li>
+      <li><a href="#" data-target="routing">🗺 ルーティング</a></li>
+      <li><a href="#" data-target="view">🖼 ビュー（View）</a></li>
+      <li><a href="#" data-target="controller">🎮 コントローラー</a></li>
+      <li><a href="#" data-target="model">🗄 モデル</a></li>
+      <li><a href="#" data-target="middleware">🛡 ミドルウェア</a></li>
+      <li><a href="#" data-target="migration">🔄 マイグレーション</a></li>
+    </ul>
+  </nav>
+</aside>
+
+<!-- ── メインコンテンツ ── -->
+<main id="main">
+
+  <!-- Node.js -->
+  <section class="section active" id="nodejs">
+    <div class="section-header">
+      <div class="icon">🟢</div>
+      <h2>Node.js</h2>
+    </div>
+
+    <div class="card">
+      <h3>Node.js とは？</h3>
+      <p>Node.js は <strong>Chrome の V8 JavaScript エンジン</strong> を使って、ブラウザ外（サーバーサイド）で JavaScript を実行できるランタイム環境です。非同期・イベント駆動型のアーキテクチャにより、高速かつスケーラブルなネットワークアプリケーションの開発に適しています。</p>
+    </div>
+
+    <div class="card">
+      <h3>主な特徴</h3>
+      <ul class="list">
+        <li><strong>シングルスレッド＋イベントループ</strong>：リクエストをノンブロッキングで処理</li>
+        <li><strong>npm エコシステム</strong>：世界最大規模のパッケージリポジトリを利用可能</li>
+        <li><strong>フロントエンドと同じ言語</strong>：JavaScript で全スタック開発が可能</li>
+        <li><strong>高速 I/O</strong>：ファイル・DB・API 呼び出しを非同期で処理</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>バージョン確認・基本コマンド</h3>
+      <pre><code># バージョン確認
+node -v
+node --version
+
+# 対話型 REPL 起動
+node
+
+# スクリプト実行
+node app.js</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>簡単な HTTP サーバーの例</h3>
+      <pre><code>const http = require('http');
+
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+  res.end('Hello, Node.js!\n');
+});
+
+server.listen(3000, () => {
+  console.log('サーバー起動中: http://localhost:3000');
+});</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>主なユースケース</h3>
+      <table>
+        <tr><th>用途</th><th>代表的なフレームワーク</th></tr>
+        <tr><td>Web API / REST API</td><td>Express, Fastify, Hono</td></tr>
+        <tr><td>リアルタイム通信</td><td>Socket.IO</td></tr>
+        <tr><td>BFF（Backend for Frontend）</td><td>Next.js (API Routes)</td></tr>
+        <tr><td>CLI ツール</td><td>Commander.js</td></tr>
+      </table>
+    </div>
+
+    <div class="tip"><strong>💡 ポイント：</strong> Node.js は CPU 負荷の高い処理（画像変換・重い計算）には不向きですが、I/O 待ちが多い Web API の開発には非常に向いています。</div>
+  </section>
+
+  <!-- npm -->
+  <section class="section" id="npm">
+    <div class="section-header">
+      <div class="icon">📦</div>
+      <h2>npm とは</h2>
+    </div>
+
+    <div class="card">
+      <h3>npm（Node Package Manager）とは？</h3>
+      <p>npm は Node.js に同梱されている<strong>パッケージ管理ツール</strong>です。外部ライブラリのインストール・更新・削除を行い、<code>package.json</code> でプロジェクトの依存関係を管理します。世界中の開発者が公開したパッケージを <strong>npm レジストリ</strong> から取得できます。</p>
+    </div>
+
+    <div class="card">
+      <h3>よく使うコマンド</h3>
+      <pre><code># プロジェクト初期化（package.json 生成）
+npm init -y
+
+# パッケージのインストール
+npm install express          # 本番依存
+npm install --save-dev jest  # 開発依存（-D も同義）
+
+# 全依存パッケージのインストール
+npm install
+
+# パッケージのアンインストール
+npm uninstall express
+
+# インストール済みパッケージ一覧
+npm list
+
+# スクリプト実行
+npm run start
+npm run build
+npm test</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>package.json の構造</h3>
+      <pre><code>{
+  "name": "my-app",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "jest": "^29.0.0"
+  }
+}</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>dependencies vs devDependencies</h3>
+      <table>
+        <tr><th>種類</th><th>用途</th><th>本番環境</th></tr>
+        <tr><td>dependencies</td><td>実行に必要なパッケージ</td><td>含まれる</td></tr>
+        <tr><td>devDependencies</td><td>開発・テスト時のみ必要</td><td>含まれない</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>package-lock.json と node_modules</h3>
+      <ul class="list">
+        <li><code>package-lock.json</code>：インストールされたパッケージの正確なバージョンを記録。チーム全員が同じ環境を再現できる</li>
+        <li><code>node_modules/</code>：実際のパッケージが格納されるフォルダ。<code>.gitignore</code> に追加して Git 管理外にする</li>
+      </ul>
+    </div>
+
+    <div class="tip"><strong>💡 代替ツール：</strong> <code>yarn</code>、<code>pnpm</code> も同様のパッケージ管理ツールです。pnpm はディスク効率が高く、モノレポでよく使われます。</div>
+  </section>
+
+  <!-- Laravel -->
+  <section class="section" id="laravel">
+    <div class="section-header">
+      <div class="icon">🔴</div>
+      <h2>Laravel</h2>
+    </div>
+
+    <div class="card">
+      <h3>Laravel とは？</h3>
+      <p>Laravel は <strong>PHP</strong> で書かれたフルスタック Web フレームワークです。「エレガントな文法」を理念に掲げ、MVC アーキテクチャを採用。認証・ルーティング・ORM（Eloquent）・マイグレーション・キューなど Web 開発に必要な機能が一通り揃っています。</p>
+    </div>
+
+    <div class="card">
+      <h3>プロジェクト作成</h3>
+      <pre><code># Composer を使ってプロジェクト作成
+composer create-project laravel/laravel my-app
+
+# または Laravel インストーラー
+composer global require laravel/installer
+laravel new my-app
+
+# 開発サーバー起動
+cd my-app
+php artisan serve
+# → http://localhost:8000</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>ディレクトリ構造（主要なもの）</h3>
+      <table>
+        <tr><th>パス</th><th>役割</th></tr>
+        <tr><td><code>app/Http/Controllers/</code></td><td>コントローラー</td></tr>
+        <tr><td><code>app/Models/</code></td><td>Eloquent モデル</td></tr>
+        <tr><td><code>routes/web.php</code></td><td>Web ルーティング</td></tr>
+        <tr><td><code>routes/api.php</code></td><td>API ルーティング</td></tr>
+        <tr><td><code>resources/views/</code></td><td>Blade テンプレート</td></tr>
+        <tr><td><code>database/migrations/</code></td><td>マイグレーションファイル</td></tr>
+        <tr><td><code>.env</code></td><td>環境設定（DB接続など）</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Artisan コマンド（よく使うもの）</h3>
+      <pre><code># コントローラー作成
+php artisan make:controller UserController
+
+# モデル + マイグレーション作成
+php artisan make:model Post -m
+
+# マイグレーション実行
+php artisan migrate
+
+# ルーティング一覧表示
+php artisan route:list
+
+# キャッシュクリア
+php artisan cache:clear
+php artisan config:clear</code></pre>
+    </div>
+
+    <div class="tip"><strong>💡 Laravel の強み：</strong> Eloquent ORM、Blade テンプレートエンジン、Laravel Sanctum（API 認証）、Laravel Breeze（スターターキット）など、エコシステムが非常に充実しています。</div>
+  </section>
+
+  <!-- Composer -->
+  <section class="section" id="composer">
+    <div class="section-header">
+      <div class="icon">🎼</div>
+      <h2>Composer とは</h2>
+    </div>
+
+    <div class="card">
+      <h3>Composer とは？</h3>
+      <p>Composer は <strong>PHP のパッケージ管理ツール</strong>です。npm の PHP 版と考えると分かりやすいです。<code>composer.json</code> に依存パッケージを記述し、<code>composer install</code> でライブラリを自動的にダウンロード・管理します。<strong>Packagist</strong>（パッケージレジストリ）から取得します。</p>
+    </div>
+
+    <div class="card">
+      <h3>よく使うコマンド</h3>
+      <pre><code># プロジェクト初期化
+composer init
+
+# パッケージのインストール
+composer require guzzlehttp/guzzle
+
+# 開発用パッケージのインストール
+composer require --dev phpunit/phpunit
+
+# 全パッケージをインストール（composer.lock 基準）
+composer install
+
+# パッケージを最新に更新
+composer update
+
+# オートロードの再生成
+composer dump-autoload
+
+# インストール済みパッケージ一覧
+composer show</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>composer.json の例</h3>
+      <pre><code>{
+  "name": "my/app",
+  "require": {
+    "php": "^8.2",
+    "laravel/framework": "^11.0",
+    "guzzlehttp/guzzle": "^7.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.0",
+    "laravel/pint": "^1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/"
+    }
+  }
+}</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>オートロード（PSR-4）</h3>
+      <p>Composer は <strong>PSR-4 規約</strong>に基づいてクラスを自動読み込みします。<code>require vendor/autoload.php</code> を一度読み込むだけで、全クラスを <code>use</code> 文で使えるようになります。</p>
+      <pre><code>require __DIR__ . '/vendor/autoload.php';
+
+use GuzzleHttp\Client;
+
+$client = new Client();
+$response = $client->get('https://api.example.com/users');</code></pre>
+    </div>
+
+    <div class="tip"><strong>💡 npm との比較：</strong> <code>composer.json</code> ≒ <code>package.json</code>、<code>composer.lock</code> ≒ <code>package-lock.json</code>、<code>vendor/</code> ≒ <code>node_modules/</code> です。<code>vendor/</code> も <code>.gitignore</code> に追加します。</div>
+  </section>
+
+  <!-- ルーティング -->
+  <section class="section" id="routing">
+    <div class="section-header">
+      <div class="icon">🗺</div>
+      <h2>ルーティング</h2>
+    </div>
+
+    <div class="card">
+      <h3>ルーティングとは？</h3>
+      <p>ルーティングとは、<strong>URL（パス）と処理（コントローラー/クロージャ）を対応付ける仕組み</strong>です。ユーザーがどの URL にアクセスしたとき、どの処理を実行するかを定義します。</p>
+    </div>
+
+    <div class="card">
+      <h3>基本的なルート定義（routes/web.php）</h3>
+      <pre><code>use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PostController;
+
+// GET リクエスト
+Route::get('/', function () {
+  return view('welcome');
+});
+
+// コントローラーへの紐付け
+Route::get('/posts', [PostController::class, 'index']);
+Route::get('/posts/{id}', [PostController::class, 'show']);
+Route::post('/posts', [PostController::class, 'store']);
+Route::put('/posts/{id}', [PostController::class, 'update']);
+Route::delete('/posts/{id}', [PostController::class, 'destroy']);</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>リソースルート（RESTful）</h3>
+      <pre><code>// 7つのアクション（index/create/store/show/edit/update/destroy）を一括定義
+Route::resource('posts', PostController::class);
+
+// API 用（create・edit を除く5つ）
+Route::apiResource('posts', PostController::class);</code></pre>
+      <table>
+        <tr><th>メソッド</th><th>URI</th><th>アクション</th></tr>
+        <tr><td>GET</td><td>/posts</td><td>index（一覧）</td></tr>
+        <tr><td>GET</td><td>/posts/{id}</td><td>show（詳細）</td></tr>
+        <tr><td>POST</td><td>/posts</td><td>store（作成）</td></tr>
+        <tr><td>PUT/PATCH</td><td>/posts/{id}</td><td>update（更新）</td></tr>
+        <tr><td>DELETE</td><td>/posts/{id}</td><td>destroy（削除）</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>ルートグループ・プレフィックス・ミドルウェア</h3>
+      <pre><code>// プレフィックスをまとめて指定
+Route::prefix('admin')->group(function () {
+  Route::get('/dashboard', [AdminController::class, 'index']);
+  Route::get('/users', [AdminController::class, 'users']);
+});
+
+// ミドルウェアをグループに適用
+Route::middleware('auth')->group(function () {
+  Route::get('/profile', [ProfileController::class, 'show']);
+  Route::put('/profile', [ProfileController::class, 'update']);
+});</code></pre>
+    </div>
+
+    <div class="tip"><strong>💡 確認コマンド：</strong> <code>php artisan route:list</code> で登録済みの全ルートを一覧表示できます。</div>
+  </section>
+
+  <!-- ビュー -->
+  <section class="section" id="view">
+    <div class="section-header">
+      <div class="icon">🖼</div>
+      <h2>ビュー（View）</h2>
+    </div>
+
+    <div class="card">
+      <h3>ビューとは？</h3>
+      <p>ビューは <strong>ユーザーに表示する HTML を生成する部分</strong>です。Laravel では <strong>Blade テンプレートエンジン</strong>を使います。ファイルは <code>resources/views/</code> に <code>.blade.php</code> 拡張子で保存します。</p>
+    </div>
+
+    <div class="card">
+      <h3>ビューの返し方（コントローラーから）</h3>
+      <pre><code>// シンプルにビューを返す
+return view('welcome');
+
+// データを渡す
+return view('posts.index', ['posts' => $posts]);
+
+// with() メソッドを使う
+return view('posts.show')->with('post', $post);
+
+// compact() を使う（変数名と同名のキーで渡せる）
+$title = '投稿一覧';
+$posts = Post::all();
+return view('posts.index', compact('title', 'posts'));</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>Blade の基本構文</h3>
+      <pre><code>{{-- コメント --}}
+
+{{-- 変数の出力（XSS エスケープあり） --}}
+{{ $post->title }}
+
+{{-- エスケープなし（信頼できるHTMLのみ） --}}
+{!! $post->content !!}
+
+{{-- 条件分岐 --}}
+@if ($user->isAdmin())
+  <p>管理者です</p>
+@elseif ($user->isMember())
+  <p>メンバーです</p>
+@else
+  <p>ゲストです</p>
+@endif
+
+{{-- ループ --}}
+@foreach ($posts as $post)
+  <li>{{ $post->title }}</li>
+@endforeach
+
+{{-- データなし時の処理 --}}
+@forelse ($posts as $post)
+  <li>{{ $post->title }}</li>
+@empty
+  <li>投稿がありません</li>
+@endforelse</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>レイアウト継承</h3>
+      <pre><code>{{-- resources/views/layouts/app.blade.php --}}
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;@yield('title', 'My App')&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  @yield('content')
+&lt;/body&gt;
+&lt;/html&gt;
+
+{{-- resources/views/posts/index.blade.php --}}
+@extends('layouts.app')
+
+@section('title', '投稿一覧')
+
+@section('content')
+  &lt;h1&gt;投稿一覧&lt;/h1&gt;
+  @foreach ($posts as $post)
+    &lt;p&gt;{{ $post->title }}&lt;/p&gt;
+  @endforeach
+@endsection</code></pre>
+    </div>
+
+    <div class="tip"><strong>💡 コンポーネント：</strong> Laravel 8 以降は <code>@component</code> の他に <strong>Blade コンポーネント</strong>（<code>php artisan make:component Alert</code>）が使えます。再利用可能なUI部品を作るのに便利です。</div>
+  </section>
+
+  <!-- コントローラー -->
+  <section class="section" id="controller">
+    <div class="section-header">
+      <div class="icon">🎮</div>
+      <h2>コントローラー</h2>
+    </div>
+
+    <div class="card">
+      <h3>コントローラーとは？</h3>
+      <p>コントローラーは <strong>MVC の「C」</strong>に相当します。ルーターから受け取ったリクエストを処理し、モデルからデータを取得してビューに渡す役割を担います。ビジネスロジックをルートファイルに直接書かずにまとめる場所です。</p>
+    </div>
+
+    <div class="card">
+      <h3>コントローラー作成</h3>
+      <pre><code># シンプルなコントローラー
+php artisan make:controller PostController
+
+# リソースコントローラー（CRUD メソッド付き）
+php artisan make:controller PostController --resource
+
+# API コントローラー（create/edit なし）
+php artisan make:controller PostController --api</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>リソースコントローラーの実装例</h3>
+      <pre><code>namespace App\Http\Controllers;
+
+use App\Models\Post;
+use Illuminate\Http\Request;
+
+class PostController extends Controller
+{
+  // 一覧表示
+  public function index()
+  {
+    $posts = Post::latest()->paginate(10);
+    return view('posts.index', compact('posts'));
+  }
+
+  // 作成フォーム表示
+  public function create()
+  {
+    return view('posts.create');
+  }
+
+  // 保存処理
+  public function store(Request $request)
+  {
+    $validated = $request->validate([
+      'title' => 'required|max:100',
+      'body'  => 'required',
+    ]);
+
+    Post::create($validated);
+    return redirect()->route('posts.index')
+                     ->with('success', '投稿を作成しました');
+  }
+
+  // 詳細表示
+  public function show(Post $post)  // Route Model Binding
+  {
+    return view('posts.show', compact('post'));
+  }
+
+  // 更新処理
+  public function update(Request $request, Post $post)
+  {
+    $post->update($request->validate([
+      'title' => 'required|max:100',
+      'body'  => 'required',
+    ]));
+    return redirect()->route('posts.show', $post);
+  }
+
+  // 削除処理
+  public function destroy(Post $post)
+  {
+    $post->delete();
+    return redirect()->route('posts.index');
+  }
+}</code></pre>
+    </div>
+
+    <div class="tip"><strong>💡 Route Model Binding：</strong> メソッドの引数にモデル型を指定すると、Laravel が URL の ID から自動的にモデルを取得してくれます。404 も自動処理されます。</div>
+  </section>
+
+  <!-- モデル -->
+  <section class="section" id="model">
+    <div class="section-header">
+      <div class="icon">🗄</div>
+      <h2>モデル</h2>
+    </div>
+
+    <div class="card">
+      <h3>モデル（Eloquent ORM）とは？</h3>
+      <p>モデルは <strong>MVC の「M」</strong>でデータベースとのやり取りを担当します。Laravel の <strong>Eloquent ORM</strong> を使えば、SQL を直接書かずにオブジェクト指向でデータ操作が可能です。</p>
+    </div>
+
+    <div class="card">
+      <h3>モデル作成</h3>
+      <pre><code># モデルのみ
+php artisan make:model Post
+
+# モデル + マイグレーション
+php artisan make:model Post -m
+
+# モデル + マイグレーション + コントローラー + リソース
+php artisan make:model Post -mcr</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>モデルの定義例</h3>
+      <pre><code>namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Post extends Model
+{
+  use SoftDeletes;
+
+  // 一括代入を許可するカラム
+  protected $fillable = ['title', 'body', 'user_id'];
+
+  // 型キャスト
+  protected $casts = [
+    'published_at' => 'datetime',
+    'is_published' => 'boolean',
+  ];
+
+  // リレーション：投稿はユーザーに属する
+  public function user()
+  {
+    return $this->belongsTo(User::class);
+  }
+
+  // リレーション：投稿は複数のコメントを持つ
+  public function comments()
+  {
+    return $this->hasMany(Comment::class);
+  }
+}</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>Eloquent の CRUD 操作</h3>
+      <pre><code>// 全件取得
+$posts = Post::all();
+
+// 条件付き取得
+$posts = Post::where('is_published', true)
+             ->orderBy('created_at', 'desc')
+             ->get();
+
+// 1件取得（見つからない場合は404）
+$post = Post::findOrFail($id);
+
+// 作成
+$post = Post::create(['title' => 'タイトル', 'body' => '本文']);
+
+// 更新
+$post->update(['title' => '新タイトル']);
+
+// 削除
+$post->delete();
+
+// リレーションを含めて取得（N+1問題を回避）
+$posts = Post::with(['user', 'comments'])->get();</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>リレーションの種類</h3>
+      <table>
+        <tr><th>メソッド</th><th>関係性</th><th>例</th></tr>
+        <tr><td>hasOne</td><td>1対1</td><td>ユーザー → プロフィール</td></tr>
+        <tr><td>hasMany</td><td>1対多</td><td>投稿 → コメント</td></tr>
+        <tr><td>belongsTo</td><td>逆の1対多</td><td>コメント → 投稿</td></tr>
+        <tr><td>belongsToMany</td><td>多対多</td><td>投稿 ↔ タグ</td></tr>
+        <tr><td>hasManyThrough</td><td>経由した1対多</td><td>国 → 投稿（ユーザー経由）</td></tr>
+      </table>
+    </div>
+
+    <div class="tip"><strong>💡 N+1 問題：</strong> ループ内でリレーションを取得すると大量のクエリが発生します。<code>with()</code>（Eager Loading）を使ってまとめて取得しましょう。</div>
+  </section>
+
+  <!-- ミドルウェア -->
+  <section class="section" id="middleware">
+    <div class="section-header">
+      <div class="icon">🛡</div>
+      <h2>ミドルウェア</h2>
+    </div>
+
+    <div class="card">
+      <h3>ミドルウェアとは？</h3>
+      <p>ミドルウェアは <strong>HTTP リクエストとレスポンスの間に処理を挟む仕組み</strong>です。認証チェック・ログ記録・CORS 設定・レート制限など、コントローラーに到達する前後に共通処理を行いたい場合に使います。</p>
+    </div>
+
+    <div class="card">
+      <h3>ミドルウェア作成</h3>
+      <pre><code>php artisan make:middleware CheckAge</code></pre>
+      <pre><code>namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+
+class CheckAge
+{
+  public function handle(Request $request, Closure $next)
+  {
+    // リクエスト前の処理
+    if ($request->age < 18) {
+      return redirect('/home')->with('error', '18歳以上限定です');
+    }
+
+    // 次の処理へ（コントローラーや次のミドルウェア）
+    $response = $next($request);
+
+    // レスポンス後の処理（ここに書くこともできる）
+    return $response;
+  }
+}</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>ミドルウェアの登録・適用</h3>
+      <pre><code>// bootstrap/app.php（Laravel 11）でグローバル登録
+->withMiddleware(function (Middleware $middleware) {
+    $middleware->alias([
+        'check.age' => \App\Http\Middleware\CheckAge::class,
+    ]);
+})
+
+// ルートへの適用
+Route::get('/adults', [AdultController::class, 'index'])
+     ->middleware('check.age');
+
+// グループへの適用
+Route::middleware(['auth', 'check.age'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+});</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>Laravel 組み込みミドルウェア</h3>
+      <table>
+        <tr><th>エイリアス</th><th>役割</th></tr>
+        <tr><td>auth</td><td>認証チェック（未ログインはリダイレクト）</td></tr>
+        <tr><td>guest</td><td>未ログインのみ通過（ログイン画面など）</td></tr>
+        <tr><td>verified</td><td>メール認証済みチェック</td></tr>
+        <tr><td>throttle</td><td>レート制限（例：throttle:60,1）</td></tr>
+        <tr><td>can</td><td>認可ポリシーチェック</td></tr>
+      </table>
+    </div>
+
+    <div class="tip"><strong>💡 処理の流れ：</strong> リクエスト → グローバルミドルウェア → ルートミドルウェア → コントローラー → レスポンス → ミドルウェアの後処理 の順に実行されます。</div>
+  </section>
+
+  <!-- マイグレーション -->
+  <section class="section" id="migration">
+    <div class="section-header">
+      <div class="icon">🔄</div>
+      <h2>マイグレーション</h2>
+    </div>
+
+    <div class="card">
+      <h3>マイグレーションとは？</h3>
+      <p>マイグレーションは <strong>データベースのスキーマ（テーブル構造）をコードで管理する仕組み</strong>です。テーブルの作成・変更・削除をファイルとして記録することで、チームで DB 構造を共有し、バージョン管理できます。</p>
+    </div>
+
+    <div class="card">
+      <h3>マイグレーションファイルの作成</h3>
+      <pre><code># テーブル作成用
+php artisan make:migration create_posts_table
+
+# テーブル変更用
+php artisan make:migration add_thumbnail_to_posts_table</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>マイグレーションファイルの例</h3>
+      <pre><code>use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+  // テーブル作成（php artisan migrate で実行）
+  public function up(): void
+  {
+    Schema::create('posts', function (Blueprint $table) {
+      $table->id();                          // BIGINT AUTO_INCREMENT
+      $table->foreignId('user_id')           // 外部キー
+            ->constrained()
+            ->cascadeOnDelete();
+      $table->string('title', 100);
+      $table->text('body');
+      $table->boolean('is_published')->default(false);
+      $table->timestamp('published_at')->nullable();
+      $table->timestamps();                  // created_at, updated_at
+      $table->softDeletes();                 // deleted_at
+    });
+  }
+
+  // ロールバック（php artisan migrate:rollback で実行）
+  public function down(): void
+  {
+    Schema::dropIfExists('posts');
+  }
+};</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>よく使うカラム型</h3>
+      <table>
+        <tr><th>メソッド</th><th>型</th></tr>
+        <tr><td>id()</td><td>BIGINT UNSIGNED AUTO_INCREMENT</td></tr>
+        <tr><td>string('name', 100)</td><td>VARCHAR(100)</td></tr>
+        <tr><td>text('body')</td><td>TEXT</td></tr>
+        <tr><td>integer('count')</td><td>INT</td></tr>
+        <tr><td>boolean('flag')</td><td>TINYINT(1)</td></tr>
+        <tr><td>decimal('price', 8, 2)</td><td>DECIMAL(8,2)</td></tr>
+        <tr><td>date('birth_date')</td><td>DATE</td></tr>
+        <tr><td>timestamp('published_at')</td><td>TIMESTAMP</td></tr>
+        <tr><td>json('options')</td><td>JSON</td></tr>
+        <tr><td>foreignId('user_id')</td><td>BIGINT（外部キー）</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>マイグレーションコマンド</h3>
+      <pre><code># マイグレーション実行
+php artisan migrate
+
+# ロールバック（1つ前に戻す）
+php artisan migrate:rollback
+
+# 全てリセットして再実行
+php artisan migrate:fresh
+
+# シーダーも同時実行
+php artisan migrate:fresh --seed
+
+# 実行状況確認
+php artisan migrate:status</code></pre>
+    </div>
+
+    <div class="tip"><strong>💡 本番環境に注意：</strong> <code>migrate:fresh</code> や <code>migrate:reset</code> は全データが失われます。本番 DB では必ず <code>migrate</code> のみ使用し、バックアップを取ってから実行しましょう。</div>
+  </section>
+
+</main>
+
+<script>
+  const links = document.querySelectorAll('#sidebar nav a');
+  const sections = document.querySelectorAll('.section');
+
+  links.forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = this.dataset.target;
+
+      // ナビのアクティブ切り替え
+      links.forEach(l => l.classList.remove('active'));
+      this.classList.add('active');
+
+      // セクション切り替え
+      sections.forEach(s => s.classList.remove('active'));
+      const targetSection = document.getElementById(target);
+      if (targetSection) {
+        targetSection.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
