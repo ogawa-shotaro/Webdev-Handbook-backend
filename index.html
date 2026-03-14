@@ -294,58 +294,186 @@
 
     <div class="card">
       <h3>Node.js とは？</h3>
-      <p>Node.js は <strong>Chrome の V8 JavaScript エンジン</strong> を使って、ブラウザ外（サーバーサイド）で JavaScript を実行できるランタイム環境です。非同期・イベント駆動型のアーキテクチャにより、高速かつスケーラブルなネットワークアプリケーションの開発に適しています。</p>
+      <p>Node.js は <strong>JavaScript をサーバー側で実行できる環境（ランタイム）</strong>です。本来ブラウザで動く JavaScript を、PC やサーバー上でも実行できるようにします。Chrome の <strong>V8 JavaScript エンジン</strong> をベースに構築されています。</p>
+      <pre><code>Node.js = V8エンジン + Node API + イベントループ</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>JavaScript との実行環境の違い</h3>
+      <table>
+        <tr><th>項目</th><th>JavaScript（ブラウザ）</th><th>Node.js</th></tr>
+        <tr><td>実行場所</td><td>ブラウザ</td><td>PC / サーバー</td></tr>
+        <tr><td>目的</td><td>UI 操作</td><td>サーバー処理</td></tr>
+        <tr><td>主な API</td><td>DOM 操作・document・alert</td><td>ファイル・OS・DB・HTTP</td></tr>
+        <tr><td>グローバル</td><td>window</td><td>global</td></tr>
+        <tr><td>例</td><td>ボタン操作・画面制御</td><td>API サーバー・ファイル操作</td></tr>
+      </table>
     </div>
 
     <div class="card">
       <h3>主な特徴</h3>
       <ul class="list">
-        <li><strong>シングルスレッド＋イベントループ</strong>：リクエストをノンブロッキングで処理</li>
-        <li><strong>npm エコシステム</strong>：世界最大規模のパッケージリポジトリを利用可能</li>
-        <li><strong>フロントエンドと同じ言語</strong>：JavaScript で全スタック開発が可能</li>
-        <li><strong>高速 I/O</strong>：ファイル・DB・API 呼び出しを非同期で処理</li>
+        <li><strong>① フロント・バックを同じ言語で書ける</strong>：JavaScript でフルスタック開発が可能</li>
+        <li><strong>② 非同期処理（ノンブロッキング I/O）</strong>：処理を待たずに次へ進み、完了したら通知</li>
+        <li><strong>③ 高速（V8 エンジン）</strong>：コンパイル型に近い速度で実行</li>
+        <li><strong>④ npm エコシステム</strong>：世界最大規模のパッケージリポジトリを利用可能</li>
       </ul>
     </div>
 
     <div class="card">
-      <h3>バージョン確認・基本コマンド</h3>
+      <h3>① イベントループ（Node 最大の特徴）</h3>
+      <p>Node.js は <strong>イベント駆動型</strong> で動作します。リクエストをキューに積み、イベントループが順に処理します。処理を待たずに次へ進むため、大量アクセスに強い構造です。</p>
+      <pre><code>リクエスト
+   ↓
+イベントキュー
+   ↓
+イベントループ
+   ↓
+処理実行 → 完了したら通知</code></pre>
+      <div class="tip"><strong>特徴：</strong> 処理を待たない → 次の処理に進む → 完了したら通知。これにより大量アクセスに強く、API サーバーに最適です。</div>
+    </div>
+
+    <div class="card">
+      <h3>② 非同期処理（ノンブロッキング）</h3>
+      <p>Node.js は <strong>Non Blocking</strong>、つまり「待たない処理」が基本です。</p>
+      <pre><code>// 同期：順番待ち
+①処理 → ②処理 → ③処理
+
+// 非同期：同時に開始し、終わった順に処理
+①開始
+②開始
+③開始
+↓ 終わった順に処理</code></pre>
+      <pre><code>setTimeout(() => {
+  console.log("3秒後")
+}, 3000)
+
+console.log("先に表示")
+
+// 結果：
+// 先に表示
+// 3秒後</code></pre>
+      <table>
+        <tr><th>方法</th><th>説明</th></tr>
+        <tr><td>callback</td><td>古い方式</td></tr>
+        <tr><td>Promise</td><td>標準的な方式</td></tr>
+        <tr><td>async / await</td><td>現在の主流</td></tr>
+      </table>
+      <pre><code>async function fetchUser() {
+  const data = await fetchData()
+  console.log(data)
+}</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>③ npm（Node Package Manager）</h3>
+      <p>npm は Node.js に同梱されている<strong>世界最大のパッケージ管理ツール</strong>です。</p>
+      <pre><code># インストール
+npm install express
+
+# 開発用
+npm install -D typescript
+
+# 全依存パッケージをインストール
+npm install</code></pre>
+      <p><code>package.json</code> にプロジェクトの依存ライブラリ・スクリプト・バージョンが記録されます。</p>
+    </div>
+
+    <div class="card">
+      <h3>④ モジュール（CJS vs ESM）</h3>
+      <p>Node.js はモジュールシステムでコードを分割・再利用します。方式は 2 種類あります。</p>
+      <table>
+        <tr><th>項目</th><th>CJS（CommonJS）</th><th>ESM（ES Modules）</th></tr>
+        <tr><td>正式名称</td><td>CommonJS</td><td>ES Modules</td></tr>
+        <tr><td>読み込み</td><td>require</td><td>import</td></tr>
+        <tr><td>エクスポート</td><td>module.exports</td><td>export</td></tr>
+        <tr><td>読み込み方式</td><td>同期</td><td>非同期</td></tr>
+        <tr><td>標準</td><td>Node.js 旧来方式</td><td>JavaScript 標準・現在主流</td></tr>
+      </table>
+      <pre><code>// CJS（CommonJS）
+const add = require("./math")
+module.exports = add
+
+// ESM（ES Modules）
+import { add } from "./math.js"
+export function add(a, b) { return a + b }</code></pre>
+      <div class="tip"><strong>ESM を使うには：</strong> <code>package.json</code> に <code>"type": "module"</code> を追加します。</div>
+    </div>
+
+    <div class="card">
+      <h3>⑤ Express（Node の定番フレームワーク）</h3>
+      <p>Node.js 単体でもサーバーを作れますが記述量が多いため、<strong>Express</strong> がよく使われます。</p>
+      <table>
+        <tr><th>フレームワーク</th><th>用途</th></tr>
+        <tr><td>Express</td><td>Web サーバー（定番）</td></tr>
+        <tr><td>NestJS</td><td>大規模開発</td></tr>
+        <tr><td>Fastify</td><td>高速・軽量</td></tr>
+      </table>
+      <pre><code>const express = require("express")
+const app = express()
+
+app.get("/", (req, res) => {
+  res.send("Hello World")
+})
+
+app.listen(3000, () => {
+  console.log("サーバー起動: http://localhost:3000")
+})</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>__dirname と __filename（CJS のみ）</h3>
+      <p>実行中のファイルのパスを取得するための変数です（CommonJS 環境で使用可）。</p>
+      <table>
+        <tr><th>変数</th><th>内容</th><th>出力例</th></tr>
+        <tr><td><code>__dirname</code></td><td>現在のファイルが存在するディレクトリのパス</td><td>/project/src</td></tr>
+        <tr><td><code>__filename</code></td><td>現在実行しているファイルのフルパス</td><td>/project/src/app.js</td></tr>
+      </table>
+      <pre><code>console.log(__dirname)   // /project/src
+console.log(__filename)  // /project/src/app.js</code></pre>
+      <div class="tip"><strong>ESM での注意：</strong> ESM（import/export）では <code>__dirname</code> / <code>__filename</code> は使えません。代わりに <code>import.meta.url</code> を使います。</div>
+    </div>
+
+    <div class="card">
+      <h3>ブラウザ vs Node.js のグローバルオブジェクト</h3>
+      <p>JavaScript は実行環境によって使えるオブジェクトが異なります。</p>
+      <table>
+        <tr><th>環境</th><th>グローバルオブジェクト</th><th>this（トップレベル）</th></tr>
+        <tr><td>ブラウザ</td><td>window</td><td>window</td></tr>
+        <tr><td>Node.js（CJS）</td><td>global</td><td>{}</td></tr>
+        <tr><td>Node.js（ESM）</td><td>global</td><td>undefined</td></tr>
+        <tr><td>共通</td><td>globalThis</td><td>—</td></tr>
+      </table>
+      <table>
+        <tr><th>ブラウザで使えるもの</th><th>Node.js で使えるもの</th></tr>
+        <tr><td>window / document / location</td><td>global / process / module</td></tr>
+        <tr><td>navigator / alert</td><td>__dirname / __filename / require</td></tr>
+        <tr><td>DOM 操作 API</td><td>ファイル・OS・DB・HTTP API</td></tr>
+      </table>
+      <pre><code>// ブラウザのみ → Node では "window is not defined"
+window.alert("hello")
+
+// どの環境でも使える共通グローバル
+console.log(globalThis)
+
+// Node.js のみ
+console.log(process.version)  // Node.js のバージョン
+console.log(__dirname)        // ディレクトリパス</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>基本コマンド</h3>
       <pre><code># バージョン確認
 node -v
-node --version
-
-# 対話型 REPL 起動
-node
 
 # スクリプト実行
-node app.js</code></pre>
+node app.js
+
+# 対話型 REPL 起動
+node</code></pre>
     </div>
 
-    <div class="card">
-      <h3>簡単な HTTP サーバーの例</h3>
-      <pre><code>const http = require('http');
-
-const server = http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
-  res.end('Hello, Node.js!\n');
-});
-
-server.listen(3000, () => {
-  console.log('サーバー起動中: http://localhost:3000');
-});</code></pre>
-    </div>
-
-    <div class="card">
-      <h3>主なユースケース</h3>
-      <table>
-        <tr><th>用途</th><th>代表的なフレームワーク</th></tr>
-        <tr><td>Web API / REST API</td><td>Express, Fastify, Hono</td></tr>
-        <tr><td>リアルタイム通信</td><td>Socket.IO</td></tr>
-        <tr><td>BFF（Backend for Frontend）</td><td>Next.js (API Routes)</td></tr>
-        <tr><td>CLI ツール</td><td>Commander.js</td></tr>
-      </table>
-    </div>
-
-    <div class="tip"><strong>💡 ポイント：</strong> Node.js は CPU 負荷の高い処理（画像変換・重い計算）には不向きですが、I/O 待ちが多い Web API の開発には非常に向いています。</div>
+    <div class="tip"><strong>💡 理解の全体像：</strong> Node.js ＝ イベントループ × 非同期処理 × npm × モジュール（CJS/ESM）× Express。この 5 つが Node.js の核心です。</div>
   </section>
 
   <!-- npm -->
@@ -357,67 +485,251 @@ server.listen(3000, () => {
 
     <div class="card">
       <h3>npm（Node Package Manager）とは？</h3>
-      <p>npm は Node.js に同梱されている<strong>パッケージ管理ツール</strong>です。外部ライブラリのインストール・更新・削除を行い、<code>package.json</code> でプロジェクトの依存関係を管理します。世界中の開発者が公開したパッケージを <strong>npm レジストリ</strong> から取得できます。</p>
+      <p>npm は Node.js に同梱されている<strong>パッケージ管理ツール</strong>です。JavaScript のライブラリやツールをインストール・管理・実行するために使います。世界中の開発者が公開したパッケージを <strong>npm レジストリ</strong> から取得できます。</p>
+      <pre><code>npm = Node.js のライブラリを管理するツール</code></pre>
+      <table>
+        <tr><th>コマンド</th><th>意味</th></tr>
+        <tr><td>npm init</td><td>プロジェクト初期化（package.json 生成）</td></tr>
+        <tr><td>npm install</td><td>全パッケージをインストール</td></tr>
+        <tr><td>npm install express</td><td>パッケージを追加</td></tr>
+        <tr><td>npm install -D nodemon</td><td>開発用パッケージを追加</td></tr>
+        <tr><td>npm install -g pkg</td><td>グローバルインストール（PC 全体で使える）</td></tr>
+        <tr><td>npm uninstall express</td><td>パッケージを削除</td></tr>
+        <tr><td>npm list</td><td>インストール済み一覧確認</td></tr>
+        <tr><td>npm run dev</td><td>scripts の dev を実行</td></tr>
+        <tr><td>npm start</td><td>scripts の start を実行</td></tr>
+        <tr><td>npm test</td><td>scripts の test を実行</td></tr>
+      </table>
     </div>
 
     <div class="card">
-      <h3>よく使うコマンド</h3>
-      <pre><code># プロジェクト初期化（package.json 生成）
-npm init -y
+      <h3>パッケージとは？ 〜読み込みまでの流れ</h3>
+      <p><strong>パッケージ</strong> = 再利用できるプログラムのまとまり。npm レジストリに公開されており、<code>npm install</code> でダウンロードして使います。</p>
+      <table>
+        <tr><th>パッケージ例</th><th>用途</th></tr>
+        <tr><td>express</td><td>Web サーバー作成</td></tr>
+        <tr><td>lodash</td><td>便利なユーティリティ関数</td></tr>
+        <tr><td>dotenv</td><td>環境変数の管理</td></tr>
+      </table>
+      <pre><code>npm init            // ① package.json 作成
+npm install express // ② パッケージ取得
+                    // ③ node_modules/express/ に保存
+                    // ④ package.json の dependencies に記録
 
-# パッケージのインストール
-npm install express          # 本番依存
-npm install --save-dev jest  # 開発依存（-D も同義）
+// ⑤ コードで読み込む
+const express = require("express")  // CJS
+import express from "express"       // ESM
 
-# 全依存パッケージのインストール
-npm install
-
-# パッケージのアンインストール
-npm uninstall express
-
-# インストール済みパッケージ一覧
-npm list
-
-# スクリプト実行
-npm run start
-npm run build
-npm test</code></pre>
+node app.js         // ⑥ 実行</code></pre>
+      <div class="tip"><strong>Node.js の読み込み順：</strong> <code>node_modules</code> を探す → <code>package.json</code> の <code>main</code> / <code>exports</code> を読む → ファイルを実行</div>
     </div>
 
     <div class="card">
-      <h3>package.json の構造</h3>
+      <h3>package.json とは？</h3>
+      <p><strong>package.json</strong> = プロジェクトの設定ファイル。npm の中心となるファイルで、使用するパッケージ・実行コマンド・バージョン・プロジェクト情報を管理します。</p>
       <pre><code>{
-  "name": "my-app",
+  "name": "app",
   "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js",
+    "dev": "nodemon src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
     "test": "jest"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1",
-    "jest": "^29.0.0"
+    "nodemon": "^3.0.0",
+    "typescript": "^5.0.0"
   }
 }</code></pre>
+      <table>
+        <tr><th>フィールド</th><th>内容</th></tr>
+        <tr><td>name / version</td><td>プロジェクト名・バージョン</td></tr>
+        <tr><td>main</td><td>エントリーポイント（Node が最初に読むファイル）</td></tr>
+        <tr><td>type</td><td><code>module</code> → ESM、<code>commonjs</code> → CJS</td></tr>
+        <tr><td>scripts</td><td>npm run で実行できるコマンド</td></tr>
+        <tr><td>dependencies</td><td>本番用パッケージ一覧</td></tr>
+        <tr><td>devDependencies</td><td>開発用パッケージ一覧</td></tr>
+      </table>
+      <p>バージョン記号の意味：</p>
+      <table>
+        <tr><th>記号</th><th>意味</th></tr>
+        <tr><td>^4.18.0</td><td>同じメジャーバージョンで更新 OK（4.x.x）</td></tr>
+        <tr><td>~4.18.0</td><td>同じマイナーバージョンで更新 OK（4.18.x）</td></tr>
+        <tr><td>4.18.0</td><td>完全固定</td></tr>
+      </table>
     </div>
 
     <div class="card">
       <h3>dependencies vs devDependencies</h3>
       <table>
-        <tr><th>種類</th><th>用途</th><th>本番環境</th></tr>
-        <tr><td>dependencies</td><td>実行に必要なパッケージ</td><td>含まれる</td></tr>
-        <tr><td>devDependencies</td><td>開発・テスト時のみ必要</td><td>含まれない</td></tr>
+        <tr><th>項目</th><th>dependencies</th><th>devDependencies</th></tr>
+        <tr><td>用途</td><td>本番で必要なパッケージ</td><td>開発時だけ必要なパッケージ</td></tr>
+        <tr><td>本番で必要</td><td>✅</td><td>❌</td></tr>
+        <tr><td>インストール</td><td>npm install pkg</td><td>npm install -D pkg</td></tr>
+        <tr><td>本番 deploy 時</td><td>入る</td><td>入らないことが多い</td></tr>
       </table>
+      <table>
+        <tr><th>dependencies の例</th><th>devDependencies の例</th></tr>
+        <tr><td>express, react, prisma, axios</td><td>typescript, nodemon, jest, eslint, vite</td></tr>
+      </table>
+      <div class="tip"><strong>分ける理由：</strong> 本番を軽くする / セキュリティ向上 / Docker 軽量化 / CI 高速化。実務では必須の使い分けです。</div>
+      <pre><code># 本番用だけインストール（devDependencies を除外）
+npm install --production
+NODE_ENV=production npm install</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>npm install の詳細</h3>
+      <p>npm install はパッケージをインストールする基本コマンドです。内部では以下の順に動作します。</p>
+      <pre><code>npm install
+   ↓
+package.json 読む
+   ↓
+package-lock.json 読む
+   ↓
+バージョン決定
+   ↓
+npm レジストリから取得
+   ↓
+node_modules に保存（依存関係も取得）</code></pre>
+      <table>
+        <tr><th>コマンド</th><th>意味</th></tr>
+        <tr><td>npm install</td><td>package.json から全パッケージをインストール</td></tr>
+        <tr><td>npm install pkg</td><td>パッケージを追加（dependencies に入る）</td></tr>
+        <tr><td>npm install -D pkg</td><td>開発用で追加（devDependencies に入る）</td></tr>
+        <tr><td>npm install -g pkg</td><td>グローバルインストール（PC 全体で使える）</td></tr>
+        <tr><td>npm install --production</td><td>dependencies のみインストール</td></tr>
+      </table>
+      <div class="tip"><strong>Git clone 後：</strong> <code>node_modules</code> は <code>.gitignore</code> で除外されているため、clone 後は必ず <code>npm install</code> を実行します。</div>
+    </div>
+
+    <div class="card">
+      <h3>npm install vs npm ci</h3>
+      <p>どちらもインストールコマンドですが、用途が異なります。</p>
+      <table>
+        <tr><th>項目</th><th>npm install</th><th>npm ci</th></tr>
+        <tr><td>用途</td><td>通常の開発</td><td>本番 / CI / Docker</td></tr>
+        <tr><td>lock ファイル必要</td><td>❌</td><td>✅（必須）</td></tr>
+        <tr><td>速度</td><td>普通</td><td>高速</td></tr>
+        <tr><td>バージョン変わる可能性</td><td>あり</td><td>なし（完全一致）</td></tr>
+        <tr><td>node_modules 削除</td><td>しない</td><td>する（クリーンインストール）</td></tr>
+        <tr><td>安定性</td><td>普通</td><td>高い</td></tr>
+      </table>
+      <pre><code># 開発
+npm install
+
+# CI / GitHub Actions / Docker / 本番
+npm ci
+npm ci --production</code></pre>
+      <div class="tip"><strong>なぜ本番では npm ci？</strong> バージョンずれ防止・再現性 100%・高速。実務の CI/Docker ではほぼ必須です。</div>
+    </div>
+
+    <div class="card">
+      <h3>--production と npm run build</h3>
+      <p>本番デプロイ・Docker・CI で必ず使う重要コマンドです。</p>
+      <table>
+        <tr><th>コマンド</th><th>意味</th></tr>
+        <tr><td>npm install --production</td><td>dependencies のみインストール</td></tr>
+        <tr><td>npm ci --production</td><td>CI 用・dependencies のみ（推奨）</td></tr>
+        <tr><td>npm run build</td><td>scripts の build を実行（開発コード → 本番コードに変換）</td></tr>
+      </table>
+      <p><strong>npm run build が必要な理由：</strong> 本番環境では TypeScript・JSX・ESNext をそのまま実行できないため、変換（コンパイル）が必要です。</p>
+      <table>
+        <tr><th>開発コード</th><th>build 後</th></tr>
+        <tr><td>TypeScript（.ts）</td><td>JavaScript（.js）</td></tr>
+        <tr><td>React / JSX</td><td>JS bundle</td></tr>
+        <tr><td>Next.js</td><td>.next/</td></tr>
+        <tr><td>Vite</td><td>dist/</td></tr>
+      </table>
+      <pre><code>// Node.js + TypeScript の典型的な本番フロー
+npm ci             // 全パッケージ入れる（devDeps も必要）
+npm run build      // tsc → dist/ に JS を生成
+npm ci --production // devDeps を除いて再インストール
+npm start          // node dist/index.js</code></pre>
+      <div class="tip"><strong>なぜ build 後に --production install？</strong> build には TypeScript など devDeps が必要。しかし本番実行には不要なので、build が終わったら devDeps を除いた状態にします。</div>
+    </div>
+
+    <div class="card">
+      <h3>scripts と run が付く / 付かない違い</h3>
+      <p>scripts に登録したコマンドは <code>npm run 名前</code> で実行できます。ただし一部は <code>run</code> なしで実行できます。</p>
+      <table>
+        <tr><th>コマンド</th><th>run 必要？</th><th>理由</th></tr>
+        <tr><td>npm start</td><td>不要</td><td>npm が特別扱いするコマンド</td></tr>
+        <tr><td>npm test</td><td>不要</td><td>npm が特別扱いするコマンド</td></tr>
+        <tr><td>npm stop / restart</td><td>不要</td><td>npm が特別扱いするコマンド</td></tr>
+        <tr><td>npm run dev</td><td>必要</td><td>カスタムコマンドは run が必要</td></tr>
+        <tr><td>npm run build</td><td>必要</td><td>カスタムコマンドは run が必要</td></tr>
+        <tr><td>npm run lint</td><td>必要</td><td>カスタムコマンドは run が必要</td></tr>
+      </table>
+      <pre><code>{
+  "scripts": {
+    "dev":   "nodemon src/index.ts",  // npm run dev
+    "build": "tsc",                   // npm run build
+    "start": "node dist/index.js",    // npm start（run 不要）
+    "test":  "jest",                  // npm test（run 不要）
+    "lint":  "eslint ."               // npm run lint
+  }
+}</code></pre>
+      <div class="tip"><strong>覚え方：</strong> <code>start / test / stop / restart</code> だけ run 不要。それ以外は <code>npm run</code> が必要。</div>
+    </div>
+
+    <div class="card">
+      <h3>dev（開発用 script）について</h3>
+      <p><code>npm run dev</code> は特別なコマンドではなく、<strong>scripts に登録した "dev" という名前を実行するだけ</strong>です。開発時は自動再起動・デバッグ・高速リロードが必要なため、本番の start とは設定を分けます。</p>
+      <table>
+        <tr><th>script</th><th>用途</th><th>よく使うツール</th></tr>
+        <tr><td>dev</td><td>開発サーバー起動</td><td>nodemon, ts-node, vite, next dev</td></tr>
+        <tr><td>build</td><td>本番用コードを生成</td><td>tsc, vite build, next build</td></tr>
+        <tr><td>start</td><td>本番サーバー起動</td><td>node dist/index.js</td></tr>
+        <tr><td>test</td><td>テスト実行</td><td>jest, vitest</td></tr>
+      </table>
+      <pre><code>// Node.js + TypeScript
+{ "dev": "ts-node src/index.ts",  "build": "tsc",        "start": "node dist/index.js" }
+
+// React / Vite
+{ "dev": "vite",                  "build": "vite build", "preview": "vite preview" }
+
+// Next.js
+{ "dev": "next dev",              "build": "next build", "start": "next start" }</code></pre>
+      <div class="tip"><strong>devDependencies との関係：</strong> dev script で使うツール（nodemon, typescript, vite, jest）は devDependencies に入れます。本番では不要なためです。</div>
+    </div>
+
+    <div class="card">
+      <h3>npx とは？ 〜 scripts との違い</h3>
+      <p><strong>npx</strong> = パッケージをインストールせず一時的に実行するコマンド（npm に付属）。</p>
+      <table>
+        <tr><th>コマンド</th><th>意味</th></tr>
+        <tr><td>npm install</td><td>パッケージをインストール</td></tr>
+        <tr><td>npm run xxx</td><td>scripts を実行</td></tr>
+        <tr><td>npx xxx</td><td>パッケージを直接実行（一時インストール or ローカル実行）</td></tr>
+      </table>
+      <pre><code>// 一回だけ使う CLI（インストール不要）
+npx create-react-app my-app
+npx create-next-app my-app
+
+// ローカルパッケージを直接実行
+npx eslint .
+npx prisma migrate dev
+npx vite</code></pre>
+      <table>
+        <tr><th>項目</th><th>scripts（npm run）</th><th>npx</th></tr>
+        <tr><td>定義場所</td><td>package.json</td><td>CLI（その場で指定）</td></tr>
+        <tr><td>永続性</td><td>登録して繰り返し使う</td><td>一時実行</td></tr>
+        <tr><td>用途</td><td>開発・ビルド・テスト</td><td>初期化・CLI ツール</td></tr>
+      </table>
+      <div class="tip"><strong>scripts 内で npx が不要な理由：</strong> scripts 内では <code>node_modules/.bin</code> が自動で PATH に追加されるため、<code>nodemon</code>・<code>tsc</code>・<code>vite</code> などをそのまま呼び出せます。</div>
     </div>
 
     <div class="card">
       <h3>package-lock.json と node_modules</h3>
       <ul class="list">
-        <li><code>package-lock.json</code>：インストールされたパッケージの正確なバージョンを記録。チーム全員が同じ環境を再現できる</li>
-        <li><code>node_modules/</code>：実際のパッケージが格納されるフォルダ。<code>.gitignore</code> に追加して Git 管理外にする</li>
+        <li><code>package-lock.json</code>：<code>npm install</code> 時に作られる。インストールされたパッケージの正確なバージョンを記録し、チーム全員が同じ環境を再現できる。<strong>Git に含める</strong></li>
+        <li><code>node_modules/</code>：パッケージ本体が入るフォルダ。require / import はここから読み込む。<strong>.gitignore に追加</strong>して Git 管理外にする</li>
       </ul>
     </div>
 
