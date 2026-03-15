@@ -15,10 +15,7 @@
       --text-dark:    #1a2e1e;
       --text-mid:     #2d4a32;
       --text-light:   #f8fff9;
-      --border:       #b7e4c7;
-      --code-bg:      #e8f5e9;
-      --shadow:       rgba(45, 106, 79, 0.15);
-    }
+      
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1498,60 +1495,216 @@ composer dump-autoload -o  # 本番向け最適化版</code></pre>
 
     <div class="card">
       <h3>ルーティングとは？</h3>
-      <p>ルーティングとは、<strong>URL（パス）と処理（コントローラー/クロージャ）を対応付ける仕組み</strong>です。ユーザーがどの URL にアクセスしたとき、どの処理を実行するかを定義します。</p>
+      <p>ルーティングとは、<strong>URL とプログラムを紐付ける仕組み</strong>のことです。ユーザーが特定の URL にアクセスしたときに、どのプログラム（処理）を実行するかを決定します。</p>
+      <p style="margin-top:10px">例えば、<code>https://example.com/about</code> にアクセスしたら「会社概要ページ」を表示し、<code>https://example.com/contact</code> にアクセスしたら「お問い合わせページ」を表示する、といった振り分けをルーティングが担当します。</p>
     </div>
 
     <div class="card">
-      <h3>基本的なルート定義（routes/web.php）</h3>
-      <pre><code>use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PostController;
-
-// GET リクエスト
-Route::get('/', function () {
-  return view('welcome');
-});
-
-// コントローラーへの紐付け
-Route::get('/posts', [PostController::class, 'index']);
-Route::get('/posts/{id}', [PostController::class, 'show']);
-Route::post('/posts', [PostController::class, 'store']);
-Route::put('/posts/{id}', [PostController::class, 'update']);
-Route::delete('/posts/{id}', [PostController::class, 'destroy']);</code></pre>
+      <h3>ルートファイルの場所</h3>
+      <p>Laravel では、ルーティングの設定は以下のファイルで行います：</p>
+      <table style="margin-top:12px">
+        <tr><th>ファイル</th><th>用途</th></tr>
+        <tr><td><code>routes/web.php</code></td><td>Web ページ用のルート（セッション、CSRF 保護あり）</td></tr>
+        <tr><td><code>routes/api.php</code></td><td>API 用のルート（Laravel 11 以降はデフォルト非存在）</td></tr>
+      </table>
+      <div class="tip" style="margin-top:12px"><strong>💡</strong> <code>api.php</code> は <code>php artisan install:api</code> コマンドで作成できます。</div>
     </div>
 
     <div class="card">
-      <h3>リソースルート（RESTful）</h3>
-      <pre><code>// 7つのアクション（index/create/store/show/edit/update/destroy）を一括定義
-Route::resource('posts', PostController::class);
+      <h3>最もシンプルなルーティング</h3>
+      <pre><code>// routes/web.php
 
-// API 用（create・edit を除く5つ）
-Route::apiResource('posts', PostController::class);</code></pre>
-      <table>
-        <tr><th>メソッド</th><th>URI</th><th>アクション</th></tr>
-        <tr><td>GET</td><td>/posts</td><td>index（一覧）</td></tr>
-        <tr><td>GET</td><td>/posts/{id}</td><td>show（詳細）</td></tr>
-        <tr><td>POST</td><td>/posts</td><td>store（作成）</td></tr>
-        <tr><td>PUT/PATCH</td><td>/posts/{id}</td><td>update（更新）</td></tr>
-        <tr><td>DELETE</td><td>/posts/{id}</td><td>destroy（削除）</td></tr>
+Route::get('/hello', function () {
+    return 'Hello, World!';
+});</code></pre>
+      <table style="margin-top:12px">
+        <tr><th>コード</th><th>説明</th></tr>
+        <tr><td><code>Route::get()</code></td><td>GET リクエストを処理するルートを定義</td></tr>
+        <tr><td><code>'/hello'</code></td><td>アクセスする URL のパス</td></tr>
+        <tr><td><code>function () { ... }</code></td><td>実行される処理（クロージャ）</td></tr>
+        <tr><td><code>return 'Hello, World!'</code></td><td>ブラウザに表示される内容</td></tr>
       </table>
     </div>
 
     <div class="card">
-      <h3>ルートグループ・プレフィックス・ミドルウェア</h3>
-      <pre><code>// プレフィックスをまとめて指定
-Route::prefix('admin')->group(function () {
-  Route::get('/dashboard', [AdminController::class, 'index']);
-  Route::get('/users', [AdminController::class, 'users']);
-});
+      <h3>ビュー（View）を返す</h3>
+      <p>HTML が複雑になると、ルートファイルに直接書くのは大変です。そこで <strong>ビュー（View）</strong> という仕組みを使います。</p>
+      <pre><code>// routes/web.php
 
-// ミドルウェアをグループに適用
-Route::middleware('auth')->group(function () {
-  Route::get('/profile', [ProfileController::class, 'show']);
-  Route::put('/profile', [ProfileController::class, 'update']);
+Route::get('/company', function () {
+    return view('company');
 });</code></pre>
+      <p style="margin-top:10px"><code>view('company')</code> は <code>resources/views/company.blade.php</code> というファイルを読み込んで表示します。</p>
     </div>
 
-    <div class="tip"><strong>💡 確認コマンド：</strong> <code>php artisan route:list</code> で登録済みの全ルートを一覧表示できます。</div>
+    <div class="card">
+      <h3>動的なルート（パラメータ）</h3>
+      <pre><code>// 基本的なパラメータ
+Route::get('/user/{id}', function ($id) {
+    return 'ユーザーID: ' . $id;
+});
+
+// 複数のパラメータ
+Route::get('/post/{category}/{id}', function ($category, $id) {
+    return "カテゴリ: {$category}, 記事ID: {$id}";
+});
+
+// オプションパラメータ（? を付けると省略可能）
+Route::get('/greeting/{name?}', function ($name = 'ゲスト') {
+    return "こんにちは、{$name}さん";
+});</code></pre>
+      <table style="margin-top:12px">
+        <tr><th>URL</th><th>結果</th></tr>
+        <tr><td>/user/1</td><td>ユーザーID: 1</td></tr>
+        <tr><td>/post/tech/123</td><td>カテゴリ: tech, 記事ID: 123</td></tr>
+        <tr><td>/greeting/太郎</td><td>こんにちは、太郎さん</td></tr>
+        <tr><td>/greeting</td><td>こんにちは、ゲストさん</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>HTTP メソッドの種類</h3>
+      <pre><code>Route::get('/users', function () {     // 一覧を表示
+    return 'ユーザー一覧';
+});
+
+Route::post('/users', function () {    // 新規作成
+    return 'ユーザーを作成しました';
+});
+
+Route::put('/users/{id}', function ($id) {  // 更新
+    return "ユーザー{$id}を更新しました";
+});
+
+Route::delete('/users/{id}', function ($id) { // 削除
+    return "ユーザー{$id}を削除しました";
+});</code></pre>
+      <table style="margin-top:12px">
+        <tr><th>メソッド</th><th>用途</th></tr>
+        <tr><td><code>Route::get()</code></td><td>データを取得する（ページ表示など）</td></tr>
+        <tr><td><code>Route::post()</code></td><td>データを送信する（フォーム送信など）</td></tr>
+        <tr><td><code>Route::put() / patch()</code></td><td>データを更新する</td></tr>
+        <tr><td><code>Route::delete()</code></td><td>データを削除する</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>ルート名（Named Routes）</h3>
+      <p>ルートに名前を付けることで、後から URL を変更しても影響を受けにくくなります。</p>
+      <pre><code>// ルート名の定義
+Route::get('/profile', function () {
+    return view('profile');
+})->name('profile');
+
+// ビューでの使用
+// &lt;a href="{{ route('profile') }}"&gt;プロフィール&lt;/a&gt;
+
+// コントローラーでのリダイレクト
+// return redirect()->route('profile');
+
+// パラメータ付きルート名
+Route::get('/user/{id}', function ($id) {
+    return view('user', ['id' => $id]);
+})->name('user.show');
+
+// &lt;a href="{{ route('user.show', ['id' => 1]) }}"&gt;ユーザー1&lt;/a&gt;</code></pre>
+      <div class="tip" style="margin-top:12px"><strong>💡</strong> URL を変更したい場合、<code>routes/web.php</code> の1箇所だけ修正すればOKです。実務ではほとんどのルートに名前を付けるのが一般的です。</div>
+    </div>
+
+    <div class="card">
+      <h3>ルートグループ（Route Group）</h3>
+      <p>複数のルートに共通の設定を適用したい場合、ルートグループを使うと便利です。</p>
+      <pre><code>// プレフィックス + ルート名 + ミドルウェアをまとめて指定
+Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('admin.dashboard');
+    })->name('dashboard');  // ルート名: admin.dashboard
+
+    Route::get('/users', function () {
+        return view('admin.users');
+    })->name('users');      // ルート名: admin.users
+});
+
+// アクセスする URL
+// /admin/dashboard  →  ルート名: admin.dashboard
+// /admin/users      →  ルート名: admin.users</code></pre>
+      <table style="margin-top:12px">
+        <tr><th>よくある使い方</th><th>例</th></tr>
+        <tr><td>管理画面のまとめ</td><td><code>prefix('admin')</code></td></tr>
+        <tr><td>API バージョン管理</td><td><code>prefix('api/v1')</code></td></tr>
+        <tr><td>多言語対応</td><td><code>prefix('ja')</code> / <code>prefix('en')</code></td></tr>
+      </table>
+    </div>
+
+    <div class="tip"><strong>💡 確認コマンド：</strong> <code>php artisan route:list</code> で登録済みの全ルートを一覧表示できます。HTTP メソッド・URI・ルート名・アクションが確認できます。</div>
+
+    <div class="card">
+      <h3>Express との比較（Todo API）</h3>
+      <p>同じ Todo の CRUD ルートを Express と Laravel で書き比べてみましょう。</p>
+
+      <h4 style="margin-top:16px; margin-bottom:8px; color:#2d6a4f">Express（Node.js）</h4>
+      <pre><code>// routes/todo.js
+todoRouter
+  .route("/")
+  .post(authHandler, validator(createTodoSchema), (req, res, next) => {
+    todoCreateController.create(req, res, next);
+  })
+  .get(authHandler, validator(getTodosSchema), (req, res, next) => {
+    todosGetController.list(req, res, next);
+  });
+
+todoRouter
+  .route("/:id")
+  .get(authHandler, validator(requestIdSchema), (req, res, next) => {
+    todoGetController.find(req, res, next);
+  })
+  .put(authHandler, validator(updateTodoSchema), (req, res, next) => {
+    todoUpdateController.update(req, res, next);
+  })
+  .delete(authHandler, validator(requestIdSchema), (req, res, next) => {
+    todoDeleteController.delete(req, res, next);
+  });</code></pre>
+
+      <h4 style="margin-top:20px; margin-bottom:8px; color:#2d6a4f">Laravel（PHP）</h4>
+      <pre><code>// routes/web.php
+Route::prefix('todos')->name('todos.')->middleware(['auth'])->group(function () {
+
+    // POST /todos - Todo 作成
+    Route::post('/', function (Request $request) {
+        return view('todos.create');
+    })->name('create');
+
+    // GET /todos - Todo 一覧
+    Route::get('/', function (Request $request) {
+        return view('todos.list');
+    })->name('list');
+
+    // GET /todos/{id} - Todo 単体
+    Route::get('/{id}', function (string $id) {
+        return view('todos.find', ['id' => $id]);
+    })->name('find');
+
+    // PUT /todos/{id} - Todo 更新
+    Route::put('/{id}', function (Request $request, string $id) {
+        return view('todos.update', ['id' => $id]);
+    })->name('update');
+
+    // DELETE /todos/{id} - Todo 削除
+    Route::delete('/{id}', function (string $id) {
+        return view('todos.delete', ['id' => $id]);
+    })->name('delete');
+});</code></pre>
+
+      <table style="margin-top:16px">
+        <tr><th>役割</th><th>Express</th><th>Laravel</th></tr>
+        <tr><td>認証チェック</td><td><code>authHandler</code> ミドルウェア</td><td><code>middleware(['auth'])</code></td></tr>
+        <tr><td>バリデーション</td><td><code>validator(schema)</code> ミドルウェア</td><td><code>$request->validate()</code></td></tr>
+        <tr><td>URL のまとめ</td><td><code>router.route("/")</code> チェーン</td><td><code>Route::prefix()->group()</code></td></tr>
+        <tr><td>処理の定義</td><td>各コントローラーのインスタンス</td><td>クロージャ または コントローラーメソッド</td></tr>
+        <tr><td>画面を返す</td><td><code>res.render('view')</code></td><td><code>return view('todos.list')</code></td></tr>
+        <tr><td>URL パラメータ</td><td><code>req.params.id</code></td><td>ルート引数 <code>$id</code></td></tr>
+      </table>
+    </div>
   </section>
 
   <!-- ビュー -->
@@ -1563,85 +1716,375 @@ Route::middleware('auth')->group(function () {
 
     <div class="card">
       <h3>ビューとは？</h3>
-      <p>ビューは <strong>ユーザーに表示する HTML を生成する部分</strong>です。Laravel では <strong>Blade テンプレートエンジン</strong>を使います。ファイルは <code>resources/views/</code> に <code>.blade.php</code> 拡張子で保存します。</p>
+      <p>ビューとは、<strong>HTML を記述するための専用ファイル</strong>のことです。プログラムのロジック（処理）と表示（HTML）を分離することで、コードの保守性が向上します。</p>
+      <p style="margin-top:10px">前章のルーティングでは、HTML をルートファイルに直接書いていましたが、実際の開発では複雑な HTML になるため、ビューファイルに分けて管理します。</p>
     </div>
 
     <div class="card">
-      <h3>ビューの返し方（コントローラーから）</h3>
-      <pre><code>// シンプルにビューを返す
-return view('welcome');
-
-// データを渡す
-return view('posts.index', ['posts' => $posts]);
-
-// with() メソッドを使う
-return view('posts.show')->with('post', $post);
-
-// compact() を使う（変数名と同名のキーで渡せる）
-$title = '投稿一覧';
-$posts = Post::all();
-return view('posts.index', compact('title', 'posts'));</code></pre>
+      <h3>ビューファイルの場所</h3>
+      <table>
+        <tr><th>項目</th><th>内容</th></tr>
+        <tr><td>配置場所</td><td><code>resources/views/</code></td></tr>
+        <tr><td>拡張子</td><td><code>.blade.php</code>（Blade テンプレートエンジン）</td></tr>
+        <tr><td>呼び出し</td><td><code>view('ファイル名')</code>（<code>.blade.php</code> は省略）</td></tr>
+      </table>
     </div>
 
     <div class="card">
-      <h3>Blade の基本構文</h3>
-      <pre><code>{{-- コメント --}}
+      <h3>基本的なビューの使い方</h3>
+      <p>① ビューファイルを作成</p>
+      <pre><code>&lt;!-- resources/views/hello.blade.php --&gt;
 
-{{-- 変数の出力（XSS エスケープあり） --}}
-{{ $post->title }}
-
-{{-- エスケープなし（信頼できるHTMLのみ） --}}
-{!! $post->content !!}
-
-{{-- 条件分岐 --}}
-@if ($user->isAdmin())
-  <p>管理者です</p>
-@elseif ($user->isMember())
-  <p>メンバーです</p>
-@else
-  <p>ゲストです</p>
-@endif
-
-{{-- ループ --}}
-@foreach ($posts as $post)
-  <li>{{ $post->title }}</li>
-@endforeach
-
-{{-- データなし時の処理 --}}
-@forelse ($posts as $post)
-  <li>{{ $post->title }}</li>
-@empty
-  <li>投稿がありません</li>
-@endforelse</code></pre>
-    </div>
-
-    <div class="card">
-      <h3>レイアウト継承</h3>
-      <pre><code>{{-- resources/views/layouts/app.blade.php --}}
 &lt;!DOCTYPE html&gt;
-&lt;html&gt;
+&lt;html lang="ja"&gt;
 &lt;head&gt;
-  &lt;title&gt;@yield('title', 'My App')&lt;/title&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Hello Page&lt;/title&gt;
 &lt;/head&gt;
 &lt;body&gt;
-  @yield('content')
+    &lt;h1&gt;Hello, World!&lt;/h1&gt;
+    &lt;p&gt;これはビューファイルから表示されています。&lt;/p&gt;
 &lt;/body&gt;
-&lt;/html&gt;
+&lt;/html&gt;</code></pre>
+      <p style="margin-top:12px">② ルートからビューを返す</p>
+      <pre><code>// routes/web.php
 
-{{-- resources/views/posts/index.blade.php --}}
-@extends('layouts.app')
-
-@section('title', '投稿一覧')
-
-@section('content')
-  &lt;h1&gt;投稿一覧&lt;/h1&gt;
-  @foreach ($posts as $post)
-    &lt;p&gt;{{ $post->title }}&lt;/p&gt;
-  @endforeach
-@endsection</code></pre>
+Route::get('/hello', function () {
+    return view('hello');
+});</code></pre>
     </div>
 
-    <div class="tip"><strong>💡 コンポーネント：</strong> Laravel 8 以降は <code>@component</code> の他に <strong>Blade コンポーネント</strong>（<code>php artisan make:component Alert</code>）が使えます。再利用可能なUI部品を作るのに便利です。</div>
+    <div class="card">
+      <h3>ビューにデータを渡す（3つの方法）</h3>
+      <pre><code>// 方法1: 第2引数に配列で渡す
+Route::get('/todos', function () {
+    $todos = ['買い物', '洗濯', '掃除'];
+    return view('todos.index', ['todos' => $todos]);
+});
+
+// 方法2: with() メソッドを使う
+Route::get('/todos', function () {
+    $todos = ['買い物', '洗濯', '掃除'];
+    return view('todos.index')->with('todos', $todos);
+});
+
+// 方法3: compact() を使う（複数変数に便利）
+Route::get('/todos/{id}', function ($id) {
+    $todo  = '買い物';
+    $done  = false;
+    return view('todos.show', compact('id', 'todo', 'done'));
+});</code></pre>
+      <div class="tip" style="margin-top:12px"><strong>💡</strong> 複数の変数を渡す場合は <code>compact()</code> が便利です。</div>
+    </div>
+
+    <div class="card">
+      <h3>compact() とは？</h3>
+      <p><code>compact()</code> は、<strong>変数名の文字列からキーと値のペアを自動で作る</strong> PHP の組み込み関数です。</p>
+
+      <p style="margin-top:12px">通常の配列渡しと比べてみましょう：</p>
+      <pre><code>// ❌ 配列で書くと、変数名を2回書く必要がある
+$title = 'Todo 一覧';
+$todos = ['買い物', '洗濯', '掃除'];
+$user  = 'Taro';
+
+return view('todos.index', [
+    'title' => $title,   // 'title' と $title で同じ名前を2回書いている
+    'todos' => $todos,   // 'todos' と $todos で同じ名前を2回書いている
+    'user'  => $user,    // 'user'  と $user  で同じ名前を2回書いている
+]);
+
+// ✅ compact() を使うと、変数名を1回書くだけでOK
+return view('todos.index', compact('title', 'todos', 'user'));</code></pre>
+
+      <p style="margin-top:12px"><code>compact('title', 'todos', 'user')</code> は内部的に以下と同じです：</p>
+      <pre><code>['title' => $title, 'todos' => $todos, 'user' => $user]</code></pre>
+
+      <div class="tip" style="margin-top:12px">
+        <strong>💡 ルール：</strong> <code>compact('変数名')</code> に渡す文字列は、<strong>必ず同名の変数が存在する必要があります。</strong><br>
+        <code>$title</code> があれば <code>compact('title')</code> ✅　／　<code>$title</code> がないのに <code>compact('title')</code> はエラー ❌
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Blade の変数表示と XSS 対策</h3>
+      <pre><code>{{-- 変数の出力（XSS エスケープあり・通常はこちらを使う） --}}
+{{ $todo->title }}
+
+{{-- エスケープなし（信頼できるHTMLのみ） --}}
+{!! $todo->description !!}</code></pre>
+      <table style="margin-top:12px">
+        <tr><th>構文</th><th>エスケープ</th><th>用途</th></tr>
+        <tr><td><code>{{ }}</code></td><td>あり（安全）</td><td>ユーザー入力・通常の変数表示</td></tr>
+        <tr><td><code>{!! !!}</code></td><td>なし（危険）</td><td>管理者が作成した HTML のみ</td></tr>
+      </table>
+      <div class="tip" style="margin-top:12px"><strong>⚠️ XSS 攻撃の例：</strong><br>
+      <code>{!! $comment !!}</code> に <code>&lt;script&gt;alert('攻撃')&lt;/script&gt;</code> が入ると JavaScript が実行されます。<br>
+      <code>{{ $comment }}</code> なら文字列としてそのまま表示され安全です。<br>
+      <strong>99% のケースで <code>{{ }}</code> を使えば問題ありません。</strong></div>
+    </div>
+
+    <div class="card">
+      <h3>Blade の制御構文</h3>
+      <pre><code>{{-- if 文 --}}
+@if ($todo->done)
+    &lt;span&gt;完了&lt;/span&gt;
+@elseif ($todo->inProgress())
+    &lt;span&gt;進行中&lt;/span&gt;
+@else
+    &lt;span&gt;未着手&lt;/span&gt;
+@endif
+
+{{-- foreach：Todo 一覧 --}}
+@foreach ($todos as $todo)
+    &lt;li&gt;{{ $todo->title }}&lt;/li&gt;
+@endforeach
+
+{{-- forelse：空のときのメッセージ付き --}}
+@forelse ($todos as $todo)
+    &lt;li&gt;{{ $todo->title }}&lt;/li&gt;
+@empty
+    &lt;p&gt;Todo がありません&lt;/p&gt;
+@endforelse</code></pre>
+      <div class="tip" style="margin-top:12px"><strong>💡 @forelse を使おう：</strong> <code>@foreach</code> に「データが空の場合の処理」を追加したものです。<br>
+      一覧表示では <code>@forelse</code> を使うのが実務の定番です。</div>
+    </div>
+
+    <div class="card">
+      <h3>ループ変数 $loop</h3>
+      <pre><code>@foreach ($todos as $todo)
+    &lt;p&gt;{{ $loop->iteration }}件目: {{ $todo->title }}&lt;/p&gt;
+
+    @if ($loop->first)
+        &lt;span&gt;最初の Todo&lt;/span&gt;
+    @endif
+
+    @if ($loop->last)
+        &lt;span&gt;最後の Todo&lt;/span&gt;
+    @endif
+@endforeach</code></pre>
+      <table style="margin-top:12px">
+        <tr><th>変数</th><th>内容</th></tr>
+        <tr><td><code>$loop->index</code></td><td>0 から始まるインデックス</td></tr>
+        <tr><td><code>$loop->iteration</code></td><td>1 から始まる回数</td></tr>
+        <tr><td><code>$loop->first</code></td><td>最初の要素か</td></tr>
+        <tr><td><code>$loop->last</code></td><td>最後の要素か</td></tr>
+        <tr><td><code>$loop->count</code></td><td>要素の総数</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>サブディレクトリによる整理（Todo の場合）</h3>
+      <pre><code>resources/views/
+├── todos/
+│   ├── index.blade.php    ← Todo 一覧
+│   ├── show.blade.php     ← Todo 詳細
+│   ├── create.blade.php   ← Todo 作成フォーム
+│   └── edit.blade.php     ← Todo 編集フォーム
+└── layouts/
+    └── app.blade.php      ← 共通レイアウト</code></pre>
+      <pre><code>// ドット記法でアクセス
+Route::get('/todos', function () {
+    return view('todos.index');         // todos/index.blade.php
+});
+Route::get('/todos/{id}', function ($id) {
+    return view('todos.show', compact('id'));  // todos/show.blade.php
+});</code></pre>
+    </div>
+
+    <div class="card">
+      <h3>レイアウトの共通化（@extends / @yield / @section）</h3>
+      <pre><code>{{-- 仕組みのイメージ --}}
+親ファイル (layouts/app.blade.php)
+├── &lt;header&gt;ヘッダー&lt;/header&gt;
+├── @yield('content')  ← ここに子ページの内容が入る
+└── &lt;footer&gt;フッター&lt;/footer&gt;
+         ↑ @extends で継承
+子ファイル (todos/index.blade.php)
+└── @section('content') ... @endsection</code></pre>
+
+      <p style="margin-top:12px">① 親ファイル（共通レイアウト）</p>
+      <pre><code>&lt;!-- resources/views/layouts/app.blade.php --&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang="ja"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;@yield('title', 'Todo App')&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;header&gt;&lt;h1&gt;Todo App&lt;/h1&gt;&lt;/header&gt;
+    &lt;main&gt;
+        @yield('content')
+    &lt;/main&gt;
+    &lt;footer&gt;&lt;p&gt;&copy; 2025 Todo App&lt;/p&gt;&lt;/footer&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+      <p style="margin-top:12px">② 子ファイル（各ページ）</p>
+      <pre><code>&lt;!-- resources/views/todos/index.blade.php --&gt;
+
+@extends('layouts.app')
+
+@section('title', 'Todo 一覧')
+
+@section('content')
+    &lt;h2&gt;Todo 一覧&lt;/h2&gt;
+    @forelse ($todos as $todo)
+        &lt;li&gt;{{ $todo->title }}&lt;/li&gt;
+    @empty
+        &lt;p&gt;Todo がありません&lt;/p&gt;
+    @endforelse
+@endsection</code></pre>
+      <table style="margin-top:12px">
+        <tr><th>ディレクティブ</th><th>意味</th></tr>
+        <tr><td><code>@extends</code></td><td>親レイアウトを継承（必ず1行目）</td></tr>
+        <tr><td><code>@yield('name')</code></td><td>親ファイルに「穴」を開ける</td></tr>
+        <tr><td><code>@section('name')</code></td><td>穴に埋める内容を指定</td></tr>
+        <tr><td><code>@endsection</code></td><td>@section の終わり</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>コンポーネント（再利用可能な UI 部品）</h3>
+      <p>コンポーネントは <code>resources/views/components/</code> に配置します。<code>&lt;x-コンポーネント名&gt;</code> で呼び出せます。</p>
+      <pre><code>&lt;!-- resources/views/components/button.blade.php --&gt;
+
+@props(['type' => 'primary'])
+
+@php
+    $styles = [
+        'primary' => 'background:#3b82f6; color:white;',
+        'danger'  => 'background:#ef4444; color:white;',
+    ];
+@endphp
+
+&lt;button style="padding:8px 16px; border-radius:4px; border:none; cursor:pointer; {{ $styles[$type] ?? $styles['primary'] }}"&gt;
+    {{ $slot }}
+&lt;/button&gt;</code></pre>
+      <pre><code>&lt;!-- 使用例（Todo の操作ボタン） --&gt;
+
+&lt;x-button type="primary"&gt;保存&lt;/x-button&gt;
+&lt;x-button type="danger"&gt;削除&lt;/x-button&gt;</code></pre>
+      <table style="margin-top:12px">
+        <tr><th>記法</th><th>説明</th></tr>
+        <tr><td><code>@props()</code></td><td>受け取る属性とデフォルト値を定義</td></tr>
+        <tr><td><code>{{ $slot }}</code></td><td>タグの間の内容（例: 「保存」）</td></tr>
+        <tr><td><code>&lt;x-slot:footer&gt;</code></td><td>名前付きスロット（複数領域を渡す）</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>フォーム関連のディレクティブ</h3>
+      <pre><code>&lt;!-- Todo 作成フォーム --&gt;
+&lt;form method="POST" action="/todos"&gt;
+    @csrf
+    &lt;input type="text" name="title" placeholder="Todo を入力"&gt;
+    &lt;button type="submit"&gt;追加&lt;/button&gt;
+&lt;/form&gt;
+
+&lt;!-- Todo 更新フォーム（PUT の擬似指定） --&gt;
+&lt;form method="POST" action="/todos/{{ $todo->id }}"&gt;
+    @csrf
+    @method('PUT')
+    &lt;input type="text" name="title" value="{{ $todo->title }}"&gt;
+    &lt;button type="submit"&gt;更新&lt;/button&gt;
+&lt;/form&gt;
+
+&lt;!-- Todo 削除フォーム（DELETE の擬似指定） --&gt;
+&lt;form method="POST" action="/todos/{{ $todo->id }}"&gt;
+    @csrf
+    @method('DELETE')
+    &lt;button type="submit"&gt;削除&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+      <div class="tip" style="margin-top:12px"><strong>💡 @csrf とは？</strong> CSRF 攻撃を防ぐトークンを自動生成します。Laravel では POST フォームに必ず付ける必要があります。<br>
+      HTML フォームは GET/POST しか使えないため、<strong>@method('PUT')</strong> などで PUT/DELETE を擬似的に指定します。</div>
+    </div>
+
+    <div class="card">
+      <h3>Todo CRUD のビュー全体像</h3>
+      <p>Express の todoRouter と対応する Laravel のビュー構成を比べてみましょう。</p>
+
+      <h4 style="margin-top:16px; margin-bottom:8px; color:#2d6a4f">Express（Node.js）</h4>
+      <pre><code>// routes/todo.js
+todoRouter
+  .route("/")
+  .post(authHandler, validator(createTodoSchema), (req, res, next) => {
+    todoCreateController.create(req, res, next);  // 作成
+  })
+  .get(authHandler, validator(getTodosSchema), (req, res, next) => {
+    todosGetController.list(req, res, next);       // 一覧
+  });
+
+todoRouter
+  .route("/:id")
+  .get(authHandler, validator(requestIdSchema), (req, res, next) => {
+    todoGetController.find(req, res, next);        // 詳細
+  })
+  .put(authHandler, validator(updateTodoSchema), (req, res, next) => {
+    todoUpdateController.update(req, res, next);   // 更新
+  })
+  .delete(authHandler, validator(requestIdSchema), (req, res, next) => {
+    todoDeleteController.delete(req, res, next);   // 削除
+  });</code></pre>
+
+      <h4 style="margin-top:20px; margin-bottom:8px; color:#2d6a4f">Laravel のルート＋ビューの対応</h4>
+      <pre><code>// routes/web.php
+Route::prefix('todos')->name('todos.')->middleware(['auth'])->group(function () {
+    Route::get('/',       fn()       => view('todos.index'))  ->name('index');   // 一覧
+    Route::get('/create', fn()       => view('todos.create')) ->name('create');  // 作成フォーム
+    Route::post('/',      fn(Request $r) => view('todos.index')) ->name('store'); // 作成処理
+    Route::get('/{id}',   fn($id)    => view('todos.show',  compact('id'))) ->name('show');   // 詳細
+    Route::get('/{id}/edit', fn($id) => view('todos.edit',  compact('id'))) ->name('edit');   // 編集フォーム
+    Route::put('/{id}',   fn(Request $r, $id) => view('todos.show', compact('id'))) ->name('update'); // 更新
+    Route::delete('/{id}',fn($id)    => view('todos.index')) ->name('destroy');  // 削除
+});</code></pre>
+
+      <h4 style="margin-top:20px; margin-bottom:8px; color:#2d6a4f">ビューファイル構成</h4>
+      <pre><code>resources/views/todos/
+├── index.blade.php    ← Todo 一覧（GET /todos）
+├── show.blade.php     ← Todo 詳細（GET /todos/{id}）
+├── create.blade.php   ← 作成フォーム（GET /todos/create）
+└── edit.blade.php     ← 編集フォーム（GET /todos/{id}/edit）</code></pre>
+
+      <h4 style="margin-top:20px; margin-bottom:8px; color:#2d6a4f">index.blade.php（一覧）の例</h4>
+      <pre><code>@extends('layouts.app')
+
+@section('title', 'Todo 一覧')
+
+@section('content')
+    &lt;h2&gt;Todo 一覧&lt;/h2&gt;
+
+    &lt;a href="{{ route('todos.create') }}"&gt;新規作成&lt;/a&gt;
+
+    @forelse ($todos as $todo)
+        &lt;div&gt;
+            &lt;span&gt;{{ $todo->title }}&lt;/span&gt;
+            &lt;a href="{{ route('todos.show',   $todo->id) }}"&gt;詳細&lt;/a&gt;
+            &lt;a href="{{ route('todos.edit',   $todo->id) }}"&gt;編集&lt;/a&gt;
+
+            &lt;form method="POST" action="{{ route('todos.destroy', $todo->id) }}"&gt;
+                @csrf
+                @method('DELETE')
+                &lt;button type="submit"&gt;削除&lt;/button&gt;
+            &lt;/form&gt;
+        &lt;/div&gt;
+    @empty
+        &lt;p&gt;Todo がありません&lt;/p&gt;
+    @endforelse
+@endsection</code></pre>
+
+      <table style="margin-top:16px">
+        <tr><th>役割</th><th>Express</th><th>Laravel View</th></tr>
+        <tr><td>一覧表示</td><td><code>todosGetController.list()</code></td><td><code>view('todos.index')</code> + <code>@forelse</code></td></tr>
+        <tr><td>詳細表示</td><td><code>todoGetController.find()</code></td><td><code>view('todos.show', compact('id'))</code></td></tr>
+        <tr><td>作成フォーム</td><td>（別途 HTML 返す処理）</td><td><code>view('todos.create')</code></td></tr>
+        <tr><td>更新フォーム</td><td>（別途 HTML 返す処理）</td><td><code>view('todos.edit', compact('id'))</code></td></tr>
+        <tr><td>PUT/DELETE 送信</td><td><code>fetch('/todos/:id', {method:'PUT'})</code></td><td><code>@method('PUT')</code> / <code>@method('DELETE')</code></td></tr>
+        <tr><td>空データ表示</td><td>条件分岐を自前で書く</td><td><code>@forelse ... @empty</code></td></tr>
+      </table>
+    </div>
+
+    <div class="tip"><strong>💡 まとめ：</strong> ビューは <code>resources/views/</code> に <code>.blade.php</code> で作成。<code>{{ }}</code> で安全に変数表示。<code>@forelse</code> で一覧＋空メッセージ。<code>@extends</code> でレイアウト共通化。<code>@csrf / @method</code> でフォーム送信。</div>
   </section>
 
   <!-- コントローラー -->
